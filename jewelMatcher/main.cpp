@@ -12,7 +12,7 @@ SDL_Surface *load_image( std::string filename )
 	SDL_Surface* loadedImage = NULL;
 	SDL_Surface* optimizedImage = NULL;
 
-	loadedImage = SDL_LoadBMP( filename.c_str() );
+	loadedImage = IMG_Load( filename.c_str() );
 
 	if (loadedImage != NULL )
 	{
@@ -63,13 +63,12 @@ int main( int argc, char* args[] )
 	SDL_WM_SetCaption( "Jewel Matcher", NULL );
 
 	//Load background image
-	//backgroundImage = IMG_Load( "C:/Programming/projects/jewelMatcher/images/BackGround.png" );
-	backgroundImage = load_image( "../images/BackGround.bmp" );
-	redJewel = load_image( "../images/Red.bmp" );
-	blueJewel = load_image( "../images/Blue.bmp" );
-	greenJewel = load_image( "../images/Green.bmp" );
-	yellowJewel = load_image( "../images/Yellow.bmp" );
-	purpleJewel = load_image( "../images/Purple.bmp" );
+	backgroundImage = load_image( "../images/BackGround.jpg" );
+	redJewel = load_image( "../images/Red.png" );
+	blueJewel = load_image( "../images/Blue.png" );
+	greenJewel = load_image( "../images/Green.png" );
+	yellowJewel = load_image( "../images/Yellow.png" );
+	purpleJewel = load_image( "../images/Purple.png" );
 
 	//Apply image to screen
 	apply_surface( 0, 0, backgroundImage, screen );
