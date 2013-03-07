@@ -1,5 +1,6 @@
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_ttf.h"
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,6 +17,11 @@ SDL_Surface* greenJewel = NULL;
 SDL_Surface* purpleJewel = NULL;
 
 SDL_Event event;
+
+// Font
+TTF_Font *font = NULL;
+SDL_Color textColor = { 10, 10, 10 };
+SDL_Surface* message = NULL;
 
 int SCREEN_WIDTH = 755;
 int SCREEN_HEIGHT = 600; 
@@ -36,9 +42,9 @@ SDL_Surface *load_image( std::string filename )
 
 		if ( optimizedImage != NULL )
 		{
-			// Get color values
+			// Set black as colorKey
 			Uint32 colorkey = SDL_MapRGB( optimizedImage->format, 0, 0, 0 );
-			// Map a color to transparency
+			// Map a colorkey to transparency
 			SDL_SetColorKey( optimizedImage, SDL_SRCCOLORKEY, colorkey );
 		}
 	}
@@ -118,8 +124,14 @@ bool init()
 		return false;
 	}
 
+	// Initialise truetype font
+	if ( TTF_Init() == -1 )
+	{
+		return false;
+	}
+
 	// Set window caption
-	SDL_WM_SetCaption( "Jewel Matcher event", NULL );
+	SDL_WM_SetCaption( "Jewel Matcher", NULL );
 
 	return true;
 }
@@ -145,6 +157,13 @@ bool load_files()
 	purpleJewel = load_image( "../images/Purple.png" );
 	if ( purpleJewel == NULL ) return false;	
 
+	// Open font
+	font = TTF_OpenFont( "lazy.ttf", 28 );
+	if ( font == NULL )
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -152,6 +171,11 @@ void clean_up()
 {
 	// Free loaded images
 	SDL_FreeSurface( backgroundImage );
+
+	// Clean up font
+	SDL_FreeSurface( message );
+	TTF_CloseFont( font );
+	TTF_Quit();
 
     //Quit SDL
     SDL_Quit();
@@ -170,9 +194,16 @@ int main( int argc, char* args[] )
 		return 1;
 	}
 
+	message = TTF_RenderText_Solid( font, "Jewel Matcher", textColor );
+	if ( message == NULL )
+	{
+		return 1;
+	}
+
 	//Apply image to screen
 	apply_surface( 0, 0, backgroundImage, screen );
 	drawGrid();
+	apply_surface( 400, 55, message, screen);
 
 	//Update screen
 	if ( SDL_Flip( screen ) == -1 )
