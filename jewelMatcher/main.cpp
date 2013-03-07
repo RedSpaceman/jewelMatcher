@@ -73,16 +73,29 @@ int main( int argc, char* args[] )
 
 	//Apply image to screen
 	apply_surface( 0, 0, backgroundImage, screen );
-	//apply_surface( 340, 120, redJewel, screen );
 
-	int xStart = 340;
-	int yStart = 116;
+	// Centre of jewel grid coordinates, manually determined
+	int xCentre = 500;
+	int yCentre = 275;
+	// Distance between each jewel render location
 	int step = 40;
+	// Number of jewels on one 
+	int gridWidth = 8;
+
+	// Based on arbitary grid width provided, determine grid starting coordinates
+	int xStart = (int)(xCentre-(step*(gridWidth/2)));
+	int yStart = (int)(yCentre-(step*(gridWidth/2)));
+	// Offset grid drawing if odd-numbered grid width
+	if ( gridWidth%2 != 0 )
+	{
+		xStart -= step/2;
+		yStart -= step/2;
+	}
 
 	// Draw grid of random jewels
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < gridWidth; i++)
 	{
-		for (int j = 0; j < 8; j++ )
+		for (int j = 0; j < gridWidth; j++ )
 		{
 			Jewel* jewel = new Jewel(xStart+(step*i), yStart+(step*j));
 			
