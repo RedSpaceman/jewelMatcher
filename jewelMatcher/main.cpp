@@ -33,6 +33,14 @@ SDL_Surface *load_image( std::string filename )
 	{
 		optimizedImage = SDL_DisplayFormat( loadedImage );
 		SDL_FreeSurface( loadedImage );
+
+		if ( optimizedImage != NULL )
+		{
+			// Get color values
+			Uint32 colorkey = SDL_MapRGB( optimizedImage->format, 0, 0, 0 );
+			// Map a color to transparency
+			SDL_SetColorKey( optimizedImage, SDL_SRCCOLORKEY, colorkey );
+		}
 	}
 
 	return optimizedImage;
@@ -56,7 +64,7 @@ void drawGrid()
 	int xCentre = 500;
 	int yCentre = 275;
 	// Distance between each jewel render location
-	int step = 40;
+	int step = 42;
 	// Number of jewels on one 
 	int gridWidth = 8;
 
