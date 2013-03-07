@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "Jewel.h"
+#include "Button.h"
 
 SDL_Surface* backgroundImage = NULL;
 SDL_Surface* screen = NULL;
@@ -15,6 +16,10 @@ SDL_Surface* blueJewel = NULL;
 SDL_Surface* yellowJewel = NULL;
 SDL_Surface* greenJewel = NULL;
 SDL_Surface* purpleJewel = NULL;
+
+SDL_Surface* socketDefault = NULL;
+SDL_Surface* socketHover = NULL;
+SDL_Surface* socketSelected = NULL;
 
 SDL_Event event;
 
@@ -89,10 +94,12 @@ void drawGrid()
 	{
 		for (int j = 0; j < gridWidth; j++ )
 		{
-			Jewel* jewel = new Jewel(xStart+(step*i), yStart+(step*j));
-			
-			char jewelType = jewel->getJewelType();
+			// Generate and draw socket
+			Button* button = new Button(xStart+(step*i), yStart+(step*j), step, step);
 
+			// Generate and draw jewel
+			Jewel* jewel = new Jewel(xStart+(step*i), yStart+(step*j));
+			char jewelType = jewel->getJewelType();
 			switch (jewelType)
 			{
 				case 'r': apply_surface( jewel->getX(), jewel->getY(), redJewel, screen);
@@ -200,27 +207,49 @@ int main( int argc, char* args[] )
 		return 1;
 	}
 
+	SDL_Surface* upMessage = TTF_RenderText_Solid( font, "Up pressed", textColor );
+	SDL_Surface* downMessage = TTF_RenderText_Solid( font, "Down pressed", textColor );
+
 	//Apply image to screen
 	apply_surface( 0, 0, backgroundImage, screen );
 	drawGrid();
-	apply_surface( 400, 55, message, screen);
-
-	//Update screen
-	if ( SDL_Flip( screen ) == -1 )
-	{
-		return 1;
-	}
-
+		
 	//Pause
 	while( quit == false )
 	{
+		// Event handling
 		while( SDL_PollEvent( &event ) )
 		{
+			// When exiting the program
 			if( event.type == SDL_QUIT )
 			{
 				//Exit
 				quit = true;
 			}
+
+			if ( event.type == SDL_KEYDOWN )
+			{
+				switch( event.key.keysym.sym )
+				{
+					case SDLK_UP: message = upMessage; break;
+					case SDLK_DOWN: message = downMessage; break;
+				}
+			}
+		}
+
+		// Refresh message
+		if ( message != NULL )
+		{
+			apply_surface( 0, 0, backgroundImage, screen );
+			drawGrid();
+			apply_surface( 400, 55, message, screen);
+			message = NULL;
+		}
+
+		//Update screen
+		if ( SDL_Flip( screen ) == -1 )
+		{
+			return 1;
 		}
 	}
 
