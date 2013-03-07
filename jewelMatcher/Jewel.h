@@ -1,3 +1,5 @@
+#ifndef JEWEL_H
+#define JEWEL_H
 
 class Jewel {
 
@@ -17,5 +19,7 @@ class Jewel {
 		void drawJewel();
 		
 };
+
+#endif
 
 

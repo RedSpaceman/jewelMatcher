@@ -7,6 +7,7 @@
 
 #include "Jewel.h"
 #include "Button.h"
+#include "Grid.h"
 
 SDL_Surface* backgroundImage = NULL;
 SDL_Surface* screen = NULL;
@@ -31,6 +32,14 @@ SDL_Surface* message = NULL;
 int SCREEN_WIDTH = 755;
 int SCREEN_HEIGHT = 600; 
 int SCREEN_BPP = 32;
+
+// Number of jewels on one side of the grid
+int GRID_SIZE= 8;
+int CELL_W = 42;
+int CELL_H = 42;
+// Centre of jewel grid coordinates, manually determined
+int GRID_CENTRE_X = 500;
+int GRID_CENTRE_Y = 275;
 
 // Load images and convert them to the right BPP
 SDL_Surface *load_image( std::string filename )
@@ -71,34 +80,26 @@ void apply_surface( int x, int y, SDL_Surface* source, SDL_Surface* destination 
 
 void drawGrid()
 {
-	// Centre of jewel grid coordinates, manually determined
-	int xCentre = 500;
-	int yCentre = 275;
-	// Distance between each jewel render location
-	int step = 42;
-	// Number of jewels on one 
-	int gridWidth = 8;
-
 	// Based on arbitary grid width provided, determine grid starting coordinates
-	int xStart = (int)(xCentre-(step*(gridWidth/2)));
-	int yStart = (int)(yCentre-(step*(gridWidth/2)));
+	int xStart = (int)(GRID_CENTRE_X-(CELL_W*(GRID_SIZE/2)));
+	int yStart = (int)(GRID_CENTRE_Y-(CELL_W*(GRID_SIZE/2)));
 	// Offset grid drawing if odd-numbered grid width
-	if ( gridWidth%2 != 0 )
+	if ( GRID_SIZE%2 != 0 )
 	{
-		xStart -= step/2;
-		yStart -= step/2;
+		xStart -= CELL_W/2;
+		yStart -= CELL_W/2;
 	}
 
 	// Draw grid of random jewels
-	for (int i = 0; i < gridWidth; i++)
+	for (int i = 0; i < GRID_SIZE; i++)
 	{
-		for (int j = 0; j < gridWidth; j++ )
+		for (int j = 0; j < GRID_SIZE; j++ )
 		{
 			// Generate and draw socket
-			Button* button = new Button(xStart+(step*i), yStart+(step*j), step, step);
+			Button* button = new Button(xStart+(CELL_W*i), yStart+(CELL_W*j), CELL_W, CELL_W);
 
 			// Generate and draw jewel
-			Jewel* jewel = new Jewel(xStart+(step*i), yStart+(step*j));
+			Jewel* jewel = new Jewel(xStart+(CELL_W*i), yStart+(CELL_W*j));
 			char jewelType = jewel->getJewelType();
 			switch (jewelType)
 			{
@@ -164,6 +165,14 @@ bool load_files()
 	purpleJewel = load_image( "../images/Purple.png" );
 	if ( purpleJewel == NULL ) return false;	
 
+	//load socket images
+	socketDefault = load_image( "../images/socketDefault.png" );
+	if ( socketDefault == NULL ) return false;
+	socketHover = load_image( "../images/socketHover.png" );
+	if ( socketHover == NULL ) return false;
+	socketSelected = load_image( "../images/socketSelected.png" );
+	if ( socketSelected == NULL ) return false;
+
 	// Open font
 	font = TTF_OpenFont( "lazy.ttf", 28 );
 	if ( font == NULL )
@@ -178,6 +187,14 @@ void clean_up()
 {
 	// Free loaded images
 	SDL_FreeSurface( backgroundImage );
+	SDL_FreeSurface( redJewel );
+	SDL_FreeSurface( greenJewel );
+	SDL_FreeSurface( purpleJewel );
+	SDL_FreeSurface( blueJewel );
+	SDL_FreeSurface( yellowJewel );
+	SDL_FreeSurface( socketDefault );
+	SDL_FreeSurface( socketHover );
+	SDL_FreeSurface( socketSelected );
 
 	// Clean up font
 	SDL_FreeSurface( message );
@@ -212,7 +229,12 @@ int main( int argc, char* args[] )
 
 	//Apply image to screen
 	apply_surface( 0, 0, backgroundImage, screen );
-	drawGrid();
+
+	// Construct Grid of Sockets and Jewels
+	// Based on arbitary grid width provided, determine grid starting coordinates
+	Grid* gameGrid = new Grid(GRID_SIZE, GRID_CENTRE_X, GRID_CENTRE_Y, CELL_W, CELL_H);
+
+	//drawGrid();
 		
 	//Pause
 	while( quit == false )
@@ -241,7 +263,7 @@ int main( int argc, char* args[] )
 		if ( message != NULL )
 		{
 			apply_surface( 0, 0, backgroundImage, screen );
-			drawGrid();
+			//drawGrid();
 			apply_surface( 400, 55, message, screen);
 			message = NULL;
 		}
