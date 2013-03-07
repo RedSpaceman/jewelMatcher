@@ -84,29 +84,22 @@ int main( int argc, char* args[] )
 	{
 		for (int j = 0; j < 8; j++ )
 		{
-			float r = (float)rand() / (float)RAND_MAX;
-			//std::cout << r << endl;
-			if ( r < 0.2 )
+			Jewel* jewel = new Jewel(xStart+(step*i), yStart+(step*j));
+			
+			char jewelType = jewel->getJewelType();
+
+			switch (jewelType)
 			{
-				apply_surface( xStart+(step*i), yStart+(step*j), redJewel, screen);
+				case 'r': apply_surface( jewel->getX(), jewel->getY(), redJewel, screen);
+				break;
+				case 'g': apply_surface( jewel->getX(), jewel->getY(), greenJewel, screen);
+				break;
+				case 'y': apply_surface( jewel->getX(), jewel->getY(), yellowJewel, screen);
+				break;
+				case 'p': apply_surface( jewel->getX(), jewel->getY(), purpleJewel, screen);
+				break;
+				case 'b': apply_surface( jewel->getX(), jewel->getY(), blueJewel, screen);
 			}
-			else if ( r <= 0.4 )
-			{
-				apply_surface( xStart+(step*i), yStart+(step*j), greenJewel, screen);
-			}
-			else if ( r <= 0.6 )
-			{
-				apply_surface( xStart+(step*i), yStart+(step*j), blueJewel, screen);
-			}
-			else if ( r <= 0.8 )
-			{
-				apply_surface( xStart+(step*i), yStart+(step*j), yellowJewel, screen);
-			}
-			else
-			{
-				apply_surface( xStart+(step*i), yStart+(step*j), purpleJewel, screen);
-			}
-			//apply_surface( xStart+(step*i), yStart+(step*j), redJewel, screen);
 		}
 	}
 

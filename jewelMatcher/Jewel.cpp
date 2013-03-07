@@ -1,6 +1,9 @@
 #include "Jewel.h"
 #include <stdlib.h>
 
+#include "SDL.h"
+#include "SDL_image.h"
+
 Jewel::Jewel(){
 }
 
@@ -15,7 +18,6 @@ Jewel::Jewel(int newX, int newY, char newJewelType){
 	y = newY;
 	jewelType = newJewelType;
 }
-
 
 int Jewel::getX()
 {
