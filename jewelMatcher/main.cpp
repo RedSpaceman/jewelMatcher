@@ -6,6 +6,21 @@
 
 #include "Jewel.h"
 
+SDL_Surface* backgroundImage = NULL;
+SDL_Surface* screen = NULL;
+
+SDL_Surface* redJewel = NULL;
+SDL_Surface* blueJewel = NULL;
+SDL_Surface* yellowJewel = NULL;
+SDL_Surface* greenJewel = NULL;
+SDL_Surface* purpleJewel = NULL;
+
+SDL_Event event;
+
+int SCREEN_WIDTH = 755;
+int SCREEN_HEIGHT = 600; 
+int SCREEN_BPP = 32;
+
 // Load images and convert them to the right BPP
 SDL_Surface *load_image( std::string filename )
 {
@@ -35,44 +50,8 @@ void apply_surface( int x, int y, SDL_Surface* source, SDL_Surface* destination 
 	SDL_BlitSurface( source, NULL, destination, &offset );
 }
 
-int main( int argc, char* args[] )
+void drawGrid()
 {
-    //Start SDL
-    if ( SDL_Init( SDL_INIT_EVERYTHING ) == -1 ) return 1;
-
-	SDL_Surface* backgroundImage = NULL;
-	SDL_Surface* screen = NULL;
-
-	SDL_Surface* redJewel = NULL;
-	SDL_Surface* blueJewel = NULL;
-	SDL_Surface* yellowJewel = NULL;
-	SDL_Surface* greenJewel = NULL;
-	SDL_Surface* purpleJewel = NULL;
-
-	SDL_Event event;
-
-	// Set up screen
-	int SCREEN_WIDTH = 755;
-	int SCREEN_HEIGHT = 600; 
-	int SCREEN_BPP = 32;
-	screen = SDL_SetVideoMode( SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_SWSURFACE );
-	if ( screen == NULL)
-	{
-		return 1;
-	}
-	SDL_WM_SetCaption( "Jewel Matcher", NULL );
-
-	//Load background image
-	backgroundImage = load_image( "../images/BackGround.jpg" );
-	redJewel = load_image( "../images/Red.png" );
-	blueJewel = load_image( "../images/Blue.png" );
-	greenJewel = load_image( "../images/Green.png" );
-	yellowJewel = load_image( "../images/Yellow.png" );
-	purpleJewel = load_image( "../images/Purple.png" );
-
-	//Apply image to screen
-	apply_surface( 0, 0, backgroundImage, screen );
-
 	// Centre of jewel grid coordinates, manually determined
 	int xCentre = 500;
 	int yCentre = 275;
@@ -114,6 +93,78 @@ int main( int argc, char* args[] )
 			}
 		}
 	}
+}
+
+bool init() 
+{
+	//Start SDL
+    if ( SDL_Init( SDL_INIT_EVERYTHING ) == -1 )
+	{
+		return false;
+	}
+
+	// Set up screen
+	screen = SDL_SetVideoMode( SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_SWSURFACE );
+	if ( screen == NULL)
+	{
+		return false;
+	}
+
+	// Set window caption
+	SDL_WM_SetCaption( "Jewel Matcher event", NULL );
+
+	return true;
+}
+
+bool load_files()
+{
+	//Load background image
+	backgroundImage = load_image( "../images/BackGround.jpg" );
+	if ( backgroundImage == NULL ) return false;
+	//load red
+	redJewel = load_image( "../images/Red.png" );
+	if ( redJewel == NULL ) return false;
+	//load blue
+	blueJewel = load_image( "../images/Blue.png" );
+	if ( blueJewel == NULL ) return false;
+	//load green
+	greenJewel = load_image( "../images/Green.png" );
+	if ( greenJewel == NULL ) return false;
+	//load yellow
+	yellowJewel = load_image( "../images/Yellow.png" );
+	if ( yellowJewel == NULL ) return false;
+	//load purple
+	purpleJewel = load_image( "../images/Purple.png" );
+	if ( purpleJewel == NULL ) return false;	
+
+	return true;
+}
+
+void clean_up()
+{
+	// Free loaded images
+	SDL_FreeSurface( backgroundImage );
+
+    //Quit SDL
+    SDL_Quit();
+}
+
+int main( int argc, char* args[] )
+{
+	bool quit = false;
+
+	if ( init() == false ){
+		return 1;
+	}
+
+	if ( load_files() == false )
+	{
+		return 1;
+	}
+
+	//Apply image to screen
+	apply_surface( 0, 0, backgroundImage, screen );
+	drawGrid();
 
 	//Update screen
 	if ( SDL_Flip( screen ) == -1 )
@@ -122,13 +173,20 @@ int main( int argc, char* args[] )
 	}
 
 	//Pause
-	SDL_Delay( 10000 );
+	while( quit == false )
+	{
+		while( SDL_PollEvent( &event ) )
+		{
+			if( event.type == SDL_QUIT )
+			{
+				//Exit
+				quit = true;
+			}
+		}
+	}
 
-	// Free loaded images
-	SDL_FreeSurface( backgroundImage );
-
-    //Quit SDL
-    SDL_Quit();
+	// Free-ip surfaces and quit SDL
+	clean_up();
     
     return 0;    
 }
