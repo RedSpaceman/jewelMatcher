@@ -3,6 +3,10 @@
 #include "SDL.h"
 #include "SDL_image.h"
 
+Button::Button()
+{
+}
+
 Button::Button( int x, int y, int width, int height )
 {
 	// Set the button's attributes

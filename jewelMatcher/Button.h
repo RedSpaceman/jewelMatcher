@@ -1,3 +1,6 @@
+#ifndef BUTTON_H
+#define BUTTON_H
+
 #include "SDL.h"
 #include "SDL_image.h"
 
@@ -9,6 +12,7 @@ class Button
 		SDL_Rect box;
 		SDL_Surface* clip;
 	public:
+		Button::Button();
 		Button::Button( int x, int y, int width, int height );
 
 		// Handle button events
@@ -17,3 +21,5 @@ class Button
 		// Show button on screen
 		void show();
 };
+
+#endif
