@@ -14,10 +14,7 @@ class Jewel {
 
 		int getX();
 		int getY();
-		char getJewelType();
-		
-		void drawJewel();
-		
+		char getJewelType();		
 };
 
 #endif

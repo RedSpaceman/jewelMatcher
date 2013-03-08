@@ -4,6 +4,7 @@
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 
 #include "Jewel.h"
 #include "Button.h"
@@ -34,7 +35,7 @@ int SCREEN_HEIGHT = 600;
 int SCREEN_BPP = 32;
 
 // Number of jewels on one side of the grid
-int GRID_SIZE= 8;
+int GRID_SIZE = 8;
 int CELL_W = 42;
 int CELL_H = 42;
 // Centre of jewel grid coordinates, manually determined
@@ -78,7 +79,7 @@ void apply_surface( int x, int y, SDL_Surface* source, SDL_Surface* destination 
 	SDL_BlitSurface( source, NULL, destination, &offset );
 }
 
-void drawGrid()
+void drawGridManually()
 {
 	// Based on arbitary grid width provided, determine grid starting coordinates
 	int xStart = (int)(GRID_CENTRE_X-(CELL_W*(GRID_SIZE/2)));
@@ -113,6 +114,40 @@ void drawGrid()
 				break;
 				case 'b': apply_surface( jewel->getX(), jewel->getY(), blueJewel, screen);
 			}
+		}
+	}
+}
+
+// Loop over sockets, drawing their images and the jewels they contain
+void drawGrid(Grid* gameGrid)
+{
+	//std::cout<<"sockets size: "<< gameGrid->sockets.size() << std::endl;
+	std::vector<Socket*>::iterator socketsEnd = gameGrid->getSocketsEnd();
+	for( std::vector<Socket*>::iterator it = gameGrid->getSocketsBeginning(); it != socketsEnd; it++)
+	{
+		// For each Socket in sockets, draw background
+		Socket* nextSocket = *it;
+		int socketXStart = nextSocket->getX() - (nextSocket->getWidth()/2);
+		int socketYStart = nextSocket->getY() - (nextSocket->getHeight()/2);
+		apply_surface( socketXStart, socketYStart, socketSelected, screen);
+
+		// Draw jewel
+		char jewelType = nextSocket->getCurrentJewelType();
+		int jewelX = nextSocket->getCurrentJewel()->getX();
+		int jewelY = nextSocket->getCurrentJewel()->getY();
+		// Use surface dims to centre the jewel images
+		switch (jewelType)
+		{
+			case 'r': apply_surface( jewelX-(redJewel->w/2), jewelY-(redJewel->h/2), redJewel, screen);
+			break;
+			case 'g': apply_surface( jewelX-(greenJewel->w/2), jewelY-(greenJewel->h/2), greenJewel, screen);
+			break;
+			case 'y': apply_surface( jewelX-(yellowJewel->w/2), jewelY-(yellowJewel->h/2), yellowJewel, screen);
+			break;
+			case 'p': apply_surface( jewelX-(purpleJewel->w/2), jewelY-(purpleJewel->h/2), purpleJewel, screen);
+			break;
+			case 'b': apply_surface( jewelX-(blueJewel->w/2), jewelY-(blueJewel->h/2), blueJewel, screen);
+			break;
 		}
 	}
 }
@@ -234,7 +269,7 @@ int main( int argc, char* args[] )
 	// Based on arbitary grid width provided, determine grid starting coordinates
 	Grid* gameGrid = new Grid(GRID_SIZE, GRID_CENTRE_X, GRID_CENTRE_Y, CELL_W, CELL_H);
 
-	//drawGrid();
+	//drawGridManually();
 		
 	//Pause
 	while( quit == false )
@@ -263,7 +298,8 @@ int main( int argc, char* args[] )
 		if ( message != NULL )
 		{
 			apply_surface( 0, 0, backgroundImage, screen );
-			//drawGrid();
+			//drawGridManually();
+			drawGrid( gameGrid );
 			apply_surface( 400, 55, message, screen);
 			message = NULL;
 		}

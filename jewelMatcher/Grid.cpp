@@ -18,8 +18,8 @@ Grid::Grid(int newGridWidth, int newCentreX, int newCentreY, int newCellWidth, i
 	}
 
 	// Allocate the number of elements required
-	sockets.resize(gridWidth * gridWidth);
 	generateSockets();
+	populateSockets();
 }
 
 Grid::~Grid()
@@ -33,8 +33,8 @@ void Grid::generateSockets()
 	int totalSockets = gridWidth*gridWidth;
 	for( int i = 0; i < totalSockets; i++)
 	{
-		int socketX = getSocketXLocFromIndex( i );
-		int socketY = getSocketYLocFromIndex( i );
+		int socketX = getSocketXCentreFromIndex( i );
+		int socketY = getSocketYCentreFromIndex( i );
 		sockets.push_back( new Socket( socketX, socketY, cellWidth, cellHeight ) );
 	}
 }
@@ -45,10 +45,9 @@ void Grid::populateSockets()
 	int totalSockets = gridWidth*gridWidth;
 	for( int i = 0; i < totalSockets; i++)
 	{
-		int x = getColumnForSocketIndex( i );
-		int y = getRowForSocketIndex( i );
-
-		sockets.at(i)->generateJewel( x, y );
+		int jewelX = getSocketXCentreFromIndex( i );
+		int jewelY = getSocketYCentreFromIndex( i );
+		sockets.at(i)->generateJewel( jewelX, jewelY );
 	}
 }
 
@@ -58,7 +57,7 @@ int Grid::getGridWidth(){
 
 Socket* Grid::getSocketAtRowColumn( int row, int column )
 {
-	return sockets.at(convertRowColumnToSocketIndex(row, column));
+	return sockets.at( convertRowColumnToSocketIndex( row, column ) );
 }
 
 int Grid::convertRowColumnToSocketIndex(int row, int column)
@@ -69,25 +68,36 @@ int Grid::convertRowColumnToSocketIndex(int row, int column)
 	// Testing logic (gW=5)
 	//  first column, first row(idx 0): 1,1 -> 0+0
 	//  fourth column, second row(idx 8): 4,2 -> 3+(1*5)=8
-	return (( column - 1 ) + ((row -1 ) * gridWidth ));
-}
-
-int Grid::getRowForSocketIndex(int socketIndex)
-{
-	return socketIndex % gridWidth;
+	return (( column - 1 ) + (( row - 1 ) * gridWidth ));
 }
 
 int Grid::getColumnForSocketIndex(int socketIndex)
 {
-	return (int)( socketIndex / gridWidth );
+	return ( socketIndex % gridWidth ) + 1;
 }
 
-int Grid::getSocketXLocFromIndex(int socketIndex)
+int Grid::getRowForSocketIndex(int socketIndex)
 {
-	return gridXStart + ( cellWidth * ( getColumnForSocketIndex(socketIndex) - 1 ));
+	return ((int)( socketIndex / gridWidth ) + 1 );
 }
 
-int Grid::getSocketYLocFromIndex(int socketIndex)
+int Grid::getSocketXCentreFromIndex(int socketIndex)
+{	
+	int temp = ( getColumnForSocketIndex(socketIndex) - 1 );
+	return gridXStart + (cellWidth / 2 ) + ( cellWidth *  temp);
+}
+
+int Grid::getSocketYCentreFromIndex(int socketIndex)
 {
-	return gridYStart + ( cellHeight * ( getRowForSocketIndex(socketIndex) - 1 ));
+	return gridYStart + (cellHeight / 2 ) + ( cellHeight * ( getRowForSocketIndex(socketIndex) - 1 ) ); 
+}
+
+std::vector<Socket*>::iterator Grid::getSocketsBeginning()
+{
+	return sockets.begin();
+}
+
+std::vector<Socket*>::iterator Grid::getSocketsEnd()
+{
+	return sockets.end();
 }

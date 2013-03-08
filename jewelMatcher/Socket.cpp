@@ -1,9 +1,49 @@
 #include "SDL.h"
 #include "Socket.h"
 
+#include <iostream>
+
 Socket::Socket(int x, int y, int w, int h)
 {
-	currentJewel = NULL;
+	socketX = x;
+	socketY = y;
+	width = w;
+	height = h;
+}
+
+int Socket::getX()
+{
+	return socketX;
+}
+
+int Socket::getY()
+{
+	return socketY;
+}
+
+int Socket::getWidth()
+{
+	return width;
+}
+
+int Socket::getHeight()
+{
+	return height;
+}
+
+Jewel* Socket::getCurrentJewel()
+{
+	return currentJewel;
+}
+
+char Socket::getCurrentJewelType()
+{
+	return currentJewel->getJewelType();
+}
+
+void Socket::generateJewel( int jewelX, int jewelY )
+{	
+	currentJewel = new Jewel( jewelX, jewelY );
 }
 
 // When called by another socket, this socket must hand-over its jewel
@@ -20,9 +60,4 @@ Jewel* Socket::relinquishJewel()
 	{
 		return NULL;
 	}	
-}
-
-void Socket::generateJewel( int x, int y )
-{	
-	currentJewel = new Jewel( x, y );
 }

@@ -17,7 +17,7 @@ class Grid{
 		int gridCentreX;
 		int gridCentreY;
 		
-		// Array of sockets
+		// Vector of sockets
 		std::vector<Socket*> sockets;
 
 	public:
@@ -37,8 +37,11 @@ class Grid{
 
 		int convertRowColumnToSocketIndex(int row, int column);
 
-		int Grid::getSocketXLocFromIndex(int socketIndex);
-		int Grid::getSocketYLocFromIndex(int socketIndex);
+		int Grid::getSocketXCentreFromIndex(int socketIndex);
+		int Grid::getSocketYCentreFromIndex(int socketIndex);
+
+		std::vector<Socket*>::iterator Grid::getSocketsBeginning();
+		std::vector<Socket*>::iterator Grid::getSocketsEnd();
 };
 
 #endif
