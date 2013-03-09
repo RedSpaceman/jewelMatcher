@@ -125,6 +125,9 @@ void drawGrid(Grid* gameGrid)
 	std::vector<Socket*>::iterator socketsEnd = gameGrid->getSocketsEnd();
 	for( std::vector<Socket*>::iterator it = gameGrid->getSocketsBeginning(); it != socketsEnd; it++)
 	{
+		// Set socket surface alphas
+		int alpha = (int)( (SDL_ALPHA_OPAQUE - SDL_ALPHA_TRANSPARENT) * 0.3 );
+		SDL_SetAlpha( socketSelected, SDL_SRCALPHA, alpha );
 		// For each Socket in sockets, draw background
 		Socket* nextSocket = *it;
 		int socketXStart = nextSocket->getX() - (nextSocket->getWidth()/2);
