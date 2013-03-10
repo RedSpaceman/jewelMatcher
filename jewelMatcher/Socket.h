@@ -11,6 +11,8 @@ class Socket
 	public:
 		Socket::Socket( SDL_Rect );
 
+		void Socket::setJewel(Jewel* newJewel);
+
 		SDL_Rect getSocketBound();
 		int Socket::getWidth();
 		int Socket::getHeight();

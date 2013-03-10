@@ -9,6 +9,7 @@
 class Jewel {
 
 		SDL_Rect jewelBound;
+		SDL_Rect destination;
 		char jewelType;
 		char getRandomJewelType();
 	public:	
@@ -16,6 +17,8 @@ class Jewel {
 		Jewel();
 		Jewel(SDL_Rect newJewelBound);
 		Jewel(SDL_Rect newJewelBound, char newJewelType);
+
+		void Jewel::setNewDestination(SDL_Rect newDest);
 
 		SDL_Rect getJewelBound();
 		char getJewelType();		

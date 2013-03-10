@@ -1,10 +1,13 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
+
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <vector>
+#include <sstream>
 
 #include "Jewel.h"
 #include "Button.h"
@@ -24,6 +27,7 @@ SDL_Surface* socketHover = NULL;
 SDL_Surface* socketSelected = NULL;
 
 SDL_Event event;
+std::vector<Socket*> selectedSockets;
 
 // Font
 TTF_Font *font = NULL;
@@ -87,12 +91,23 @@ void drawGrid(Grid* gameGrid)
 	for( std::vector<Socket*>::iterator it = gameGrid->getSocketsBeginning(); it != socketsEnd; it++)
 	{
 		// Set socket surface alphas
-		int alpha = (int)( (SDL_ALPHA_OPAQUE - SDL_ALPHA_TRANSPARENT) * 0.3 );
+		int alpha = (int)( (SDL_ALPHA_OPAQUE - SDL_ALPHA_TRANSPARENT) * 0.5 );
 		SDL_SetAlpha( socketSelected, SDL_SRCALPHA, alpha );
+		alpha = (int)( (SDL_ALPHA_OPAQUE - SDL_ALPHA_TRANSPARENT) * 0.4);
+		SDL_SetAlpha( socketDefault, SDL_SRCALPHA, alpha );
 		// For each Socket in sockets, draw background
 		Socket* nextSocket = *it;
 		SDL_Rect socketBound = nextSocket->getSocketBound();
-		apply_surface( socketBound.x, socketBound.y, socketSelected, screen);
+		// Draw socket image dependent on whether socket is selected
+		if( ( selectedSockets.size() > 0 && ( nextSocket == selectedSockets.at(0) ) ) 
+			|| ( selectedSockets.size() > 1 && ( nextSocket == selectedSockets.at(1) ) ) )
+		{
+			apply_surface( socketBound.x, socketBound.y, socketSelected, screen);
+		}
+		else
+		{
+			apply_surface( socketBound.x, socketBound.y, socketDefault, screen);
+		}
 
 		// Draw jewel
 		char jewelType = nextSocket->getCurrentJewelType();
@@ -268,17 +283,43 @@ int main( int argc, char* args[] )
 					if( gameGrid->withinBound( mX, mY ) ) 
 					{
 						// Collect pointer to socket being upclicked
-						Socket* selectedSocket = gameGrid->getSocketAtCoordinates( mX, mY );
-						if( selectedSocket != NULL )
+						Socket* upClickedSocket = gameGrid->getSocketAtCoordinates( mX, mY );
+						if( upClickedSocket != NULL )
 						{
 							// Up-click was on a socket
-							message = TTF_RenderText_Solid( font, "Clicky!", textColor );
-						}
+							std::stringstream selectionSize;
+							selectionSize << "Selection: ";// >> selectedSockets.size();
+							message = TTF_RenderText_Solid( font, selectionSize.str().c_str(), textColor );
+							// Add socket to selection vector
+							selectedSockets.push_back(upClickedSocket);
+							int currentSelectionSize = selectedSockets.size();
+							if( currentSelectionSize == 1 )
+							{
+								// A socket is selected
+								printf("One socket selected");
+							}
+							if( currentSelectionSize == 2 )
+							{
+								// Once two sockets are selected, attempt jewel exchange validation and execution
+								gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+								printf("Test");
+								selectedSockets.clear();
+							}
+							else if( currentSelectionSize > 2 )
+							{
+								// Should not be able to select more than two, so error has occurred
+								std::cout << "Selection error has occured. " << selectedSockets.size() << " sockets were selected. Clearing selection." << std::endl;
+								selectedSockets.clear();
+							}
+						}						
 					}
 					else
 					{
 						// Up-click occurred outside of the grid
+						// ...therefore deselect currently selected socket
 						message = TTF_RenderText_Solid( font, "Bad click!", textColor );
+						// Clicking outside of the grid is used for deselection
+						selectedSockets.clear();
 					}
 				}
 			}

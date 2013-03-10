@@ -132,3 +132,57 @@ Socket* Grid::getSocketAtCoordinates(int x, int y)
 	return selectedSocket;
 }
 
+bool Grid::checkSocketAdjacency( Socket* firstSocket, Socket* secondSocket )
+{
+	SDL_Rect firstLoc = firstSocket->getSocketBound();
+	SDL_Rect secondLoc = secondSocket->getSocketBound();
+
+	if( firstLoc.x == secondLoc.x )
+	{
+		// Sockets are vertically aligned
+		if( ( secondLoc.y == firstLoc.y - cellHeight ) || ( secondLoc.y == firstLoc.y + cellHeight ) )
+		{
+			// Cells are vertically adjacent
+			return true;
+		}
+	}
+	else if( firstLoc.y == secondLoc.y )
+	{
+		// Sockets are horizontally aligned
+		if( ( secondLoc.x == firstLoc.x - cellWidth ) || ( secondLoc.x == firstLoc.x + cellWidth ) )
+		{
+			// Cells are horizontally adjacent
+			return true;
+		}
+	}
+	// Note: If locations are identical, false is returned
+	return false;
+}
+
+bool Grid::attemptJewelExchange( Socket* firstSocket, Socket* secondSocket )
+{
+	// Check sockets are adjacent
+	if( checkSocketAdjacency( firstSocket, secondSocket ) )
+	{
+		// Switch jewel pointers between sockets
+		Jewel* firstJewel = firstSocket->getCurrentJewel();
+		firstSocket->setJewel(secondSocket->getCurrentJewel());
+		secondSocket->setJewel(firstJewel);
+		if( firstSocket->getCurrentJewel() != NULL && secondSocket->getCurrentJewel() != NULL)
+		{
+			// Jewel ownership switched successfully
+			// Update jewel locations by setting new destinations
+			firstSocket->getCurrentJewel()->setNewDestination(firstSocket->getSocketBound());
+			secondSocket->getCurrentJewel()->setNewDestination(secondSocket->getSocketBound());
+			return true;
+		}
+		else
+		{
+			// An error has occured during pointer exchange
+			return false;
+		}
+	}
+	// Sockets were not adjacent, exchange failed
+	return false;
+}
+

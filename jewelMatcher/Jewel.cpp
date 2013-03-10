@@ -6,13 +6,22 @@ Jewel::Jewel(){
 Jewel::Jewel(SDL_Rect newJewelBound)
 {
 	jewelBound = newJewelBound;
+	destination = jewelBound;
 	jewelType = getRandomJewelType();
 }
 
 Jewel::Jewel(SDL_Rect newJewelBound, char newJewelType)
 {
 	jewelBound = newJewelBound;
+	destination = jewelBound;
 	jewelType = newJewelType;
+}
+
+void Jewel::setNewDestination(SDL_Rect newDest)
+{
+	destination = newDest;
+	// TODO: Change from 'arrive immediately' to an updated partial movement
+	jewelBound = destination;
 }
 
 SDL_Rect Jewel::getJewelBound()

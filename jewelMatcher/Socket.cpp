@@ -8,6 +8,11 @@ Socket::Socket(SDL_Rect newSocketBound)
 	socketBound = newSocketBound;
 }
 
+void Socket::setJewel(Jewel* newJewel)
+{
+	currentJewel = newJewel;
+}
+
 SDL_Rect Socket::getSocketBound()
 {
 	return socketBound;

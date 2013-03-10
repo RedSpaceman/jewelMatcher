@@ -50,6 +50,15 @@ class Grid{
 
 		// Given screen coordinates checked for grid-validity, then used to return a pointer to socket at that location
 		Socket* Grid::getSocketAtCoordinates(int x, int y);
+
+		// Validity of exchange checked, then jewels instructed to swap places
+		bool Grid::attemptJewelExchange( Socket* firstSocket, Socket* secondSocket );
+
+		// Return true if socket locations are a legal switch
+		bool Grid::checkSocketAdjacency( Socket* firstSocket, Socket* secondSocket );
+
+		// Returns true if all jewels complete their moves, false if some are still in transit
+		bool Grid::moveJewelsToDestinations();
 };
 
 #endif
