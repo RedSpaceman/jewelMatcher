@@ -1,8 +1,10 @@
 #ifndef GRID_H
 #define GRID_H
 
-#include "Socket.h"
+#include "SDL.h"
 #include <vector>
+
+#include "Socket.h"
 
 class Grid{
 	private: 
@@ -11,11 +13,7 @@ class Grid{
 		int cellWidth;
 		int cellHeight;
 
-		int gridXStart;
-		int gridYStart;
-
-		int gridCentreX;
-		int gridCentreY;
+		SDL_Rect gridBoundary;
 		
 		// Vector of sockets
 		std::vector<Socket*> sockets;
@@ -39,6 +37,8 @@ class Grid{
 
 		int Grid::getSocketXCentreFromIndex(int socketIndex);
 		int Grid::getSocketYCentreFromIndex(int socketIndex);
+		SDL_Rect Grid::calcSocketBoundaryFromIndex(int socketIndex);
+
 
 		std::vector<Socket*>::iterator Grid::getSocketsBeginning();
 		std::vector<Socket*>::iterator Grid::getSocketsEnd();
