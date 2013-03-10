@@ -301,8 +301,12 @@ int main( int argc, char* args[] )
 							if( currentSelectionSize == 2 )
 							{
 								// Once two sockets are selected, attempt jewel exchange validation and execution
-								gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-								printf("Test");
+								// If selection was same socket twice, deselection should be the only action
+								if( selectedSockets.at(0) != selectedSockets.at(1) )
+								{	
+									gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+									printf("Test");
+								}
 								selectedSockets.clear();
 							}
 							else if( currentSelectionSize > 2 )
