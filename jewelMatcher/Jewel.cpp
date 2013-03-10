@@ -15,15 +15,10 @@ Jewel::Jewel(SDL_Rect newJewelBound, char newJewelType)
 	jewelType = newJewelType;
 }
 
-int Jewel::getX()
+SDL_Rect Jewel::getJewelBound()
 {
-	return jewelBound.x;
-};
-
-int Jewel::getY()
-{
-	return jewelBound.y;
-};
+	return jewelBound;
+}
 
 char Jewel::getJewelType(){
 	return jewelType;

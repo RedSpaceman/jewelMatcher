@@ -11,8 +11,7 @@ class Socket
 	public:
 		Socket::Socket( SDL_Rect );
 
-		int getX();
-		int getY();
+		SDL_Rect getSocketBound();
 		int Socket::getWidth();
 		int Socket::getHeight();
 

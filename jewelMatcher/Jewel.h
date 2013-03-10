@@ -17,8 +17,7 @@ class Jewel {
 		Jewel(SDL_Rect newJewelBound);
 		Jewel(SDL_Rect newJewelBound, char newJewelType);
 
-		int getX();
-		int getY();
+		SDL_Rect getJewelBound();
 		char getJewelType();		
 };
 

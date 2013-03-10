@@ -30,18 +30,24 @@ class Grid{
 		int getGridWidth();
 
 		Socket* getSocketAtRowColumn( int row, int column );
-		int Grid::getRowForSocketIndex(int socketIndex);
+
 		int Grid::getColumnForSocketIndex(int socketIndex);
+		int Grid::getRowForSocketIndex(int socketIndex);
+		
 
 		int convertRowColumnToSocketIndex(int row, int column);
+		
+		int Grid::getColumnFromXCoord(int x);
+		int Grid::getRowFromYCoord(int y);
 
-		int Grid::getSocketXCentreFromIndex(int socketIndex);
-		int Grid::getSocketYCentreFromIndex(int socketIndex);
 		SDL_Rect Grid::calcSocketBoundFromIndex(int socketIndex);
-
 
 		std::vector<Socket*>::iterator Grid::getSocketsBeginning();
 		std::vector<Socket*>::iterator Grid::getSocketsEnd();
+
+		bool Grid::withinBound(int x, int y);
+
+		Socket* Grid::getUpClickedSocket(int x, int y);
 };
 
 #endif

@@ -79,46 +79,6 @@ void apply_surface( int x, int y, SDL_Surface* source, SDL_Surface* destination 
 	SDL_BlitSurface( source, NULL, destination, &offset );
 }
 
-void drawGridManually()
-{
-	// Based on arbitary grid width provided, determine grid starting coordinates
-	int xStart = (int)(GRID_CENTRE_X-(CELL_W*(GRID_SIZE/2)));
-	int yStart = (int)(GRID_CENTRE_Y-(CELL_W*(GRID_SIZE/2)));
-	// Offset grid drawing if odd-numbered grid width
-	if ( GRID_SIZE%2 != 0 )
-	{
-		xStart -= CELL_W/2;
-		yStart -= CELL_W/2;
-	}
-
-	// Draw grid of random jewels
-	for (int i = 0; i < GRID_SIZE; i++)
-	{
-		for (int j = 0; j < GRID_SIZE; j++ )
-		{
-			// Generate and draw socket
-			Button* button = new Button(xStart+(CELL_W*i), yStart+(CELL_W*j), CELL_W, CELL_W);
-
-			// Generate and draw jewel
-			SDL_Rect jewelBound = {xStart+(CELL_W*i), yStart+(CELL_W*j), 0, 0};
-			Jewel* jewel = new Jewel( jewelBound );
-			char jewelType = jewel->getJewelType();
-			switch (jewelType)
-			{
-				case 'r': apply_surface( jewel->getX(), jewel->getY(), redJewel, screen);
-				break;
-				case 'g': apply_surface( jewel->getX(), jewel->getY(), greenJewel, screen);
-				break;
-				case 'y': apply_surface( jewel->getX(), jewel->getY(), yellowJewel, screen);
-				break;
-				case 'p': apply_surface( jewel->getX(), jewel->getY(), purpleJewel, screen);
-				break;
-				case 'b': apply_surface( jewel->getX(), jewel->getY(), blueJewel, screen);
-			}
-		}
-	}
-}
-
 // Loop over sockets, drawing their images and the jewels they contain
 void drawGrid(Grid* gameGrid)
 {
@@ -131,14 +91,15 @@ void drawGrid(Grid* gameGrid)
 		SDL_SetAlpha( socketSelected, SDL_SRCALPHA, alpha );
 		// For each Socket in sockets, draw background
 		Socket* nextSocket = *it;
-		int socketXStart = nextSocket->getX() - (nextSocket->getWidth()/2);
-		int socketYStart = nextSocket->getY() - (nextSocket->getHeight()/2);
-		apply_surface( socketXStart, socketYStart, socketSelected, screen);
+		SDL_Rect socketBound = nextSocket->getSocketBound();
+		apply_surface( socketBound.x, socketBound.y, socketSelected, screen);
 
 		// Draw jewel
 		char jewelType = nextSocket->getCurrentJewelType();
-		int jewelX = nextSocket->getCurrentJewel()->getX();
-		int jewelY = nextSocket->getCurrentJewel()->getY();
+		SDL_Rect jewelBound = nextSocket->getCurrentJewel()->getJewelBound();
+		// Jewel centres required to accomodate jewel surface variety in size
+		int jewelX = jewelBound.x + (int)(jewelBound.w * 0.5);
+		int jewelY = jewelBound.y + (int)(jewelBound.h * 0.5);
 		// Use surface dims to centre the jewel images
 		switch (jewelType)
 		{
@@ -306,6 +267,10 @@ int main( int argc, char* args[] )
 					int mX = event.button.x;
 					int mY = event.button.y;
 					// Check if click occurred within grid
+					if( gameGrid->withinBound( mX, mY ) ) 
+					{
+						//
+					}
 				}
 			}
 		}

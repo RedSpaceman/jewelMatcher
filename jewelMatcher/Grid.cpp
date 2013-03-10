@@ -38,6 +38,7 @@ void Grid::populateSockets()
 	int totalSockets = gridWidth*gridWidth;
 	for( int i = 0; i < totalSockets; i++)
 	{
+		// Use socket boundary as jewel boundary
 		SDL_Rect jewelBound = calcSocketBoundFromIndex(i);
 		sockets.at(i)->generateJewel( jewelBound );
 	}
@@ -73,6 +74,18 @@ int Grid::getRowForSocketIndex(int socketIndex)
 	return ((int)( socketIndex / gridWidth ) + 1 );
 }
 
+// Making the coordinate relative to the grid, and dividing by column width, provides column number
+int Grid::getColumnFromXCoord(int x)
+{
+	return ( (x - gridBound.x) / cellWidth) + 1;
+}
+
+// Making the coordinate relative to the grid, and dividing by row height, provides row number
+int Grid::getRowFromYCoord(int y)
+{
+	return ( (y - gridBound.y) / cellHeight ) + 1;
+}
+
 SDL_Rect Grid::calcSocketBoundFromIndex(int socketIndex)
 {
 	SDL_Rect socketBound;
@@ -92,5 +105,29 @@ std::vector<Socket*>::iterator Grid::getSocketsBeginning()
 std::vector<Socket*>::iterator Grid::getSocketsEnd()
 {
 	return sockets.end();
+}
+
+// Check if the given coordinates are inside the grid's boundary
+bool Grid::withinBound(int x, int y)
+{
+	if( ( x >= gridBound.x ) && x <= gridBound.x + gridBound.w )
+	{
+		if( ( y >= gridBound.y ) && ( y <= gridBound.y + gridBound.h ) )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+Socket* Grid::getUpClickedSocket(int x, int y)
+{
+	Socket* selectedSocket;
+	
+	int column = getColumnFromXCoord(x);
+	int row = getRowFromYCoord(y);
+
+
+	return getSocketAtRowColumn(row, column);
 }
 

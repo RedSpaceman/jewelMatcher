@@ -8,14 +8,9 @@ Socket::Socket(SDL_Rect newSocketBound)
 	socketBound = newSocketBound;
 }
 
-int Socket::getX()
+SDL_Rect Socket::getSocketBound()
 {
-	return socketBound.x;
-}
-
-int Socket::getY()
-{
-	return socketBound.y;
+	return socketBound;
 }
 
 int Socket::getWidth()
