@@ -3,32 +3,29 @@
 
 #include <iostream>
 
-Socket::Socket(int x, int y, int w, int h)
+Socket::Socket(SDL_Rect newSocketBound)
 {
-	socketX = x;
-	socketY = y;
-	width = w;
-	height = h;
+	socketBound = newSocketBound;
 }
 
 int Socket::getX()
 {
-	return socketX;
+	return socketBound.x;
 }
 
 int Socket::getY()
 {
-	return socketY;
+	return socketBound.y;
 }
 
 int Socket::getWidth()
 {
-	return width;
+	return socketBound.w;
 }
 
 int Socket::getHeight()
 {
-	return height;
+	return socketBound.h;
 }
 
 Jewel* Socket::getCurrentJewel()
@@ -41,9 +38,9 @@ char Socket::getCurrentJewelType()
 	return currentJewel->getJewelType();
 }
 
-void Socket::generateJewel( int jewelX, int jewelY )
+void Socket::generateJewel( SDL_Rect newJewelBound )
 {	
-	currentJewel = new Jewel( jewelX, jewelY );
+	currentJewel = new Jewel( newJewelBound );
 }
 
 // When called by another socket, this socket must hand-over its jewel

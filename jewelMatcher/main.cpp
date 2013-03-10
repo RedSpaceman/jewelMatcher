@@ -100,7 +100,8 @@ void drawGridManually()
 			Button* button = new Button(xStart+(CELL_W*i), yStart+(CELL_W*j), CELL_W, CELL_W);
 
 			// Generate and draw jewel
-			Jewel* jewel = new Jewel(xStart+(CELL_W*i), yStart+(CELL_W*j));
+			SDL_Rect jewelBound = {xStart+(CELL_W*i), yStart+(CELL_W*j), 0, 0};
+			Jewel* jewel = new Jewel( jewelBound );
 			char jewelType = jewel->getJewelType();
 			switch (jewelType)
 			{
@@ -293,6 +294,18 @@ int main( int argc, char* args[] )
 				{
 					case SDLK_UP: message = upMessage; break;
 					case SDLK_DOWN: message = downMessage; break;
+				}
+			}
+
+			if ( event.type == SDL_MOUSEBUTTONUP )
+			{
+				// Click-down's don't matter as much as click-ups
+				if( event.button.button == SDL_BUTTON_LEFT )
+				{
+					// Get mouse offsets
+					int mX = event.button.x;
+					int mY = event.button.y;
+					// Check if click occurred within grid
 				}
 			}
 		}

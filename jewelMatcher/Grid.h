@@ -13,7 +13,7 @@ class Grid{
 		int cellWidth;
 		int cellHeight;
 
-		SDL_Rect gridBoundary;
+		SDL_Rect gridBound;
 		
 		// Vector of sockets
 		std::vector<Socket*> sockets;
@@ -37,7 +37,7 @@ class Grid{
 
 		int Grid::getSocketXCentreFromIndex(int socketIndex);
 		int Grid::getSocketYCentreFromIndex(int socketIndex);
-		SDL_Rect Grid::calcSocketBoundaryFromIndex(int socketIndex);
+		SDL_Rect Grid::calcSocketBoundFromIndex(int socketIndex);
 
 
 		std::vector<Socket*>::iterator Grid::getSocketsBeginning();

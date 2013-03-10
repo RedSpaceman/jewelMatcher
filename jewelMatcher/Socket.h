@@ -6,13 +6,10 @@
 class Socket
 {
 	private:
-		int socketX;
-		int socketY;
-		int width;
-		int height;
+		SDL_Rect socketBound;
 		Jewel* currentJewel;
 	public:
-		Socket::Socket( int x, int y, int w, int h );
+		Socket::Socket( SDL_Rect );
 
 		int getX();
 		int getY();
@@ -22,7 +19,7 @@ class Socket
 		Jewel* getCurrentJewel();
 		char getCurrentJewelType();
 
-		void generateJewel( int x, int y );
+		void generateJewel( SDL_Rect newJewelBound );
 		Jewel* relinquishJewel();
 
 };

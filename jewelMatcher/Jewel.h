@@ -1,16 +1,21 @@
 #ifndef JEWEL_H
 #define JEWEL_H
 
+#include <stdlib.h>
+
+#include "SDL.h"
+#include "SDL_image.h"
+
 class Jewel {
 
-		int x, y;
+		SDL_Rect jewelBound;
 		char jewelType;
 		char getRandomJewelType();
 	public:	
 		
 		Jewel();
-		Jewel(int newX, int newY);
-		Jewel(int newX, int newY, char newJewelType);
+		Jewel(SDL_Rect newJewelBound);
+		Jewel(SDL_Rect newJewelBound, char newJewelType);
 
 		int getX();
 		int getY();

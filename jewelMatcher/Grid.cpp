@@ -6,10 +6,10 @@ Grid::Grid(int newGridWidth, int newCentreX, int newCentreY, int newCellWidth, i
 	cellHeight = newCellHeight;
 
 	// If gridWidth is odd, gridWidth%2 allows additional half-width shift to centre central socket
-	gridBoundary.x = (int)(newCentreX-(cellWidth*(gridWidth*0.5))) - (int)((gridWidth%2) * (cellWidth*0.5));
-	gridBoundary.y = (int)(newCentreY-(cellHeight*(gridWidth*0.5))) - (int)((gridWidth%2) * (cellHeight*0.5));
-	gridBoundary.w = gridWidth * cellWidth;
-	gridBoundary.h = gridWidth * cellHeight;
+	gridBound.x = (int)(newCentreX-(cellWidth*(gridWidth*0.5))) - (int)((gridWidth%2) * (cellWidth*0.5));
+	gridBound.y = (int)(newCentreY-(cellHeight*(gridWidth*0.5))) - (int)((gridWidth%2) * (cellHeight*0.5));
+	gridBound.w = gridWidth * cellWidth;
+	gridBound.h = gridWidth * cellHeight;
 
 	// Allocate the number of elements required
 	generateSockets();
@@ -27,9 +27,8 @@ void Grid::generateSockets()
 	int totalSockets = gridWidth*gridWidth;
 	for( int i = 0; i < totalSockets; i++)
 	{
-		int socketX = getSocketXCentreFromIndex( i );
-		int socketY = getSocketYCentreFromIndex( i );
-		sockets.push_back( new Socket( socketX, socketY, cellWidth, cellHeight ) );
+		SDL_Rect socketBound = calcSocketBoundFromIndex(i);
+		sockets.push_back( new Socket( socketBound ) );
 	}
 }
 
@@ -39,9 +38,8 @@ void Grid::populateSockets()
 	int totalSockets = gridWidth*gridWidth;
 	for( int i = 0; i < totalSockets; i++)
 	{
-		int jewelX = getSocketXCentreFromIndex( i );
-		int jewelY = getSocketYCentreFromIndex( i );
-		sockets.at(i)->generateJewel( jewelX, jewelY );
+		SDL_Rect jewelBound = calcSocketBoundFromIndex(i);
+		sockets.at(i)->generateJewel( jewelBound );
 	}
 }
 
@@ -75,26 +73,15 @@ int Grid::getRowForSocketIndex(int socketIndex)
 	return ((int)( socketIndex / gridWidth ) + 1 );
 }
 
-int Grid::getSocketXCentreFromIndex(int socketIndex)
-{	
-	int temp = ( getColumnForSocketIndex(socketIndex) - 1 );
-	return gridBoundary.x + (cellWidth / 2 ) + ( cellWidth *  temp);
-}
-
-int Grid::getSocketYCentreFromIndex(int socketIndex)
+SDL_Rect Grid::calcSocketBoundFromIndex(int socketIndex)
 {
-	return gridBoundary.y + (cellHeight / 2 ) + ( cellHeight * ( getRowForSocketIndex(socketIndex) - 1 ) ); 
-}
+	SDL_Rect socketBound;
+	socketBound.x = gridBound.x + ( cellWidth * ( getColumnForSocketIndex(socketIndex) - 1 ) );
+	socketBound.y = gridBound.y + ( cellHeight * ( getRowForSocketIndex(socketIndex) - 1 ) ); 
+	socketBound.w = cellWidth;
+	socketBound.h = cellHeight;
 
-SDL_Rect Grid::calcSocketBoundaryFromIndex(int socketIndex)
-{
-	SDL_Rect socketBoundary;
-	socketBoundary.x = gridBoundary.x + ( cellWidth * ( getColumnForSocketIndex(socketIndex) - 1 ) );
-	socketBoundary.y = gridBoundary.y + ( cellHeight * ( getRowForSocketIndex(socketIndex) - 1 ) ); 
-	socketBoundary.w = cellWidth;
-	socketBoundary.h = cellHeight;
-
-	return socketBoundary;
+	return socketBound;
 }
 
 std::vector<Socket*>::iterator Grid::getSocketsBeginning()

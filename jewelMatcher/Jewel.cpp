@@ -1,32 +1,28 @@
 #include "Jewel.h"
-#include <stdlib.h>
-
-#include "SDL.h"
-#include "SDL_image.h"
 
 Jewel::Jewel(){
 }
 
-Jewel::Jewel(int newX, int newY){
-	x = newX;
-	y = newY;
+Jewel::Jewel(SDL_Rect newJewelBound)
+{
+	jewelBound = newJewelBound;
 	jewelType = getRandomJewelType();
 }
 
-Jewel::Jewel(int newX, int newY, char newJewelType){
-	x = newX;
-	y = newY;
+Jewel::Jewel(SDL_Rect newJewelBound, char newJewelType)
+{
+	jewelBound = newJewelBound;
 	jewelType = newJewelType;
 }
 
 int Jewel::getX()
 {
-	return x;
+	return jewelBound.x;
 };
 
 int Jewel::getY()
 {
-	return y;
+	return jewelBound.y;
 };
 
 char Jewel::getJewelType(){
