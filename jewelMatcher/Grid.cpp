@@ -74,13 +74,12 @@ int Grid::getRowForSocketIndex(int socketIndex)
 	return ((int)( socketIndex / gridWidth ) + 1 );
 }
 
-// Making the coordinate relative to the grid, and dividing by column width, provides column number
+
 int Grid::getColumnFromXCoord(int x)
 {
 	return ( (x - gridBound.x) / cellWidth) + 1;
 }
 
-// Making the coordinate relative to the grid, and dividing by row height, provides row number
 int Grid::getRowFromYCoord(int y)
 {
 	return ( (y - gridBound.y) / cellHeight ) + 1;

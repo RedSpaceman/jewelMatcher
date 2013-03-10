@@ -8,6 +8,7 @@
 
 class Grid{
 	private: 
+		// Grid width is the number of grid cells along one side
 		int gridWidth;
 
 		int cellWidth;
@@ -31,10 +32,10 @@ class Grid{
 
 		Socket* getSocketAtRowColumn( int row, int column );
 
+		// Making the coordinate relative to the grid, and dividing by a cell dimension, provides column (or row) number
 		int Grid::getColumnForSocketIndex(int socketIndex);
 		int Grid::getRowForSocketIndex(int socketIndex);
 		
-
 		int convertRowColumnToSocketIndex(int row, int column);
 		
 		int Grid::getColumnFromXCoord(int x);

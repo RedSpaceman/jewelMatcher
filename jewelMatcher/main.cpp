@@ -234,8 +234,6 @@ int main( int argc, char* args[] )
 	// Based on arbitary grid width provided, determine grid starting coordinates
 	Grid* gameGrid = new Grid(GRID_SIZE, GRID_CENTRE_X, GRID_CENTRE_Y, CELL_W, CELL_H);
 
-	//drawGridManually();
-		
 	//Pause
 	while( quit == false )
 	{
@@ -279,7 +277,6 @@ int main( int argc, char* args[] )
 		if ( message != NULL )
 		{
 			apply_surface( 0, 0, backgroundImage, screen );
-			//drawGridManually();
 			drawGrid( gameGrid );
 			apply_surface( 400, 55, message, screen);
 			message = NULL;
