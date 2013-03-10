@@ -59,6 +59,9 @@ class Grid{
 
 		// Returns true if all jewels complete their moves, false if some are still in transit
 		bool Grid::moveJewelsToDestinations();
+
+		// Searches the grid for locations where jewels of the same colour form lines of greater than three
+		int Grid::findColorGroups();
 };
 
 #endif

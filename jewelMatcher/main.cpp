@@ -286,26 +286,37 @@ int main( int argc, char* args[] )
 						Socket* upClickedSocket = gameGrid->getSocketAtCoordinates( mX, mY );
 						if( upClickedSocket != NULL )
 						{
-							// Up-click was on a socket
-							std::stringstream selectionSize;
-							selectionSize << "Selection: ";// >> selectedSockets.size();
-							message = TTF_RenderText_Solid( font, selectionSize.str().c_str(), textColor );
+							// Up-click was on a socket...
 							// Add socket to selection vector
 							selectedSockets.push_back(upClickedSocket);
-							int currentSelectionSize = selectedSockets.size();
+							int currentSelectionSize = (int)selectedSockets.size();
+							
+							// Vary behaviour, dependent on how many sockets are currently selected
 							if( currentSelectionSize == 1 )
 							{
 								// A socket is selected
 								printf("One socket selected");
 							}
-							if( currentSelectionSize == 2 )
+							else if( currentSelectionSize == 2 )
 							{
 								// Once two sockets are selected, attempt jewel exchange validation and execution
 								// If selection was same socket twice, deselection should be the only action
 								if( selectedSockets.at(0) != selectedSockets.at(1) )
 								{	
 									gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-									printf("Test");
+									// Check whether jewel switch has created color groups
+									int totalColorGroups = gameGrid->findColorGroups();
+									if( totalColorGroups > 0)
+									{
+										// Created matching sets, therefore was valid move
+										printf("yes!");
+									}
+									else
+									{
+										// No matching sets created; move was invalid so switch back
+										printf("no!");
+										gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+									}
 								}
 								selectedSockets.clear();
 							}
@@ -315,6 +326,11 @@ int main( int argc, char* args[] )
 								std::cout << "Selection error has occured. " << selectedSockets.size() << " sockets were selected. Clearing selection." << std::endl;
 								selectedSockets.clear();
 							}
+
+							// Change stand-in message regarding selections
+							std::stringstream selectionSize;
+							selectionSize << "Selection: " << selectedSockets.size();
+							message = TTF_RenderText_Solid( font, selectionSize.str().c_str(), textColor );
 						}						
 					}
 					else

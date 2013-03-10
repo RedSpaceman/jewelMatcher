@@ -34,13 +34,30 @@ void Grid::generateSockets()
 
 void Grid::populateSockets()
 {
-	// Instruct each socket to generate a new jewel
-	int totalSockets = gridWidth*gridWidth;
-	for( int i = 0; i < totalSockets; i++)
+	int boardGenNumber = 1;
+	bool acceptBoard = false;
+	while( !acceptBoard )
 	{
-		// Use socket boundary as jewel boundary
-		SDL_Rect jewelBound = calcSocketBoundFromIndex(i);
-		sockets.at(i)->generateJewel( jewelBound );
+		// Instruct each socket to generate a new jewel
+		int totalSockets = gridWidth*gridWidth;
+		for( int i = 0; i < totalSockets; i++)
+		{
+			// Use socket boundary as jewel boundary
+			SDL_Rect jewelBound = calcSocketBoundFromIndex(i);
+			sockets.at(i)->generateJewel( jewelBound );
+		}
+
+		// Check board for pre-existing color groups
+		if( findColorGroups() > 0 )
+		{
+			// Delete board and try again
+			boardGenNumber++;
+		}
+		else
+		{
+			// Generated board is acceptable!
+			acceptBoard = true;
+		}
 	}
 }
 
@@ -186,3 +203,101 @@ bool Grid::attemptJewelExchange( Socket* firstSocket, Socket* secondSocket )
 	return false;
 }
 
+int Grid::findColorGroups()
+{
+	// Definition: Color groups are like-colored jewels in groups >=3 in a line
+
+	// Counter for total point-scoring groups found
+	int totalColorGroups = 0;
+	// Counter for how many jewels belong to the color group currently being tracked
+	int jewelsInCurrentGroup = 0;
+	// Color next jewel must match to be part of the current color group (default to non-colour value)
+	char currentGroupColor = 'z';
+	// Flag to indicate whether the current group has ended (end of row or non-match found)
+	bool scoreAndReset = false;
+
+	// Run along rows, counting consecutive colours
+	for( int socketIndex = 0; socketIndex < sockets.size(); socketIndex++)
+	{
+		char nextJewelColor = sockets.at( socketIndex )->getCurrentJewelType();
+		
+		// Check color match, ensuring next socket isn't the first of a new row
+		if( nextJewelColor == currentGroupColor )
+		{
+			// Added this jewel to the current color group
+			jewelsInCurrentGroup++;
+		}
+		else
+		{
+			// Jewels did not match, so current color group ends
+			scoreAndReset = true;
+		}
+
+		// Check if socket is last on the row
+		if( (( socketIndex + 1 ) % gridWidth ) == 0 )
+		{
+			// End of row reached
+			scoreAndReset = true;
+		}
+
+		// If a match fails, or the end of a row is reached, 
+		if( scoreAndReset )
+		{
+			// Check if existing color group was point scoring size
+			if( jewelsInCurrentGroup >= 3 )
+			{
+				// Point scoring group was formed 
+				totalColorGroups++;
+				// TODO: Award points
+				printf("points!");
+			}
+			// Reset group tracking using current color, current jewel counts as first in next potential group
+			jewelsInCurrentGroup = 1;
+			currentGroupColor = nextJewelColor;
+			scoreAndReset = false;
+		}
+	}
+	
+	
+	// Check for vertical groups in each columns
+	jewelsInCurrentGroup = 0;
+	currentGroupColor = 'z';
+	scoreAndReset = false;
+	for( int columnIndex = 0; columnIndex < gridWidth; columnIndex++ )
+	{
+		// For each column there is the same number of socket indices between the top and bottom socket
+		int bottomSocketIndexInColumn = columnIndex + ( gridWidth * ( gridWidth - 1 ));
+		// For each consecutive column-wise entry, socketIndex increases by gridWidth
+		for( int socketIndex = columnIndex; socketIndex < bottomSocketIndexInColumn; socketIndex += gridWidth )
+		{
+			char nextJewelColor = sockets.at(socketIndex)->getCurrentJewelType();
+			
+			// Check for jewel color match
+			if( currentGroupColor == nextJewelColor )
+			{
+				jewelsInCurrentGroup++;
+			}
+			else
+			{
+				scoreAndReset = true;
+			}
+
+			if( scoreAndReset )
+			{
+				// Check if existing color group was point scoring size
+				if( jewelsInCurrentGroup >= 3 )
+				{
+					// Point scoring group was formed 
+					totalColorGroups++;
+					// TODO: Award points
+					printf("points!");
+				}
+				// Reset group tracking using current color, current jewel counts as first in next potential group
+				jewelsInCurrentGroup = 1;
+				currentGroupColor = nextJewelColor;
+				scoreAndReset = false;
+			}
+		}
+	}
+	return totalColorGroups;
+}
