@@ -258,7 +258,6 @@ int Grid::findColorGroups()
 		}
 	}
 	
-	
 	// Check for vertical groups in each columns
 	jewelsInCurrentGroup = 0;
 	currentGroupColor = 'z';
@@ -278,6 +277,12 @@ int Grid::findColorGroups()
 				jewelsInCurrentGroup++;
 			}
 			else
+			{
+				scoreAndReset = true;
+			}
+
+			// Check if socket is bottom in column
+			if( socketIndex == bottomSocketIndexInColumn )
 			{
 				scoreAndReset = true;
 			}
