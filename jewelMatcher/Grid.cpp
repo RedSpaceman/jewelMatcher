@@ -119,14 +119,16 @@ bool Grid::withinBound(int x, int y)
 	return false;
 }
 
-Socket* Grid::getUpClickedSocket(int x, int y)
+Socket* Grid::getSocketAtCoordinates(int x, int y)
 {
-	Socket* selectedSocket;
+	Socket* selectedSocket = NULL;
 	
-	int column = getColumnFromXCoord(x);
-	int row = getRowFromYCoord(y);
-
-
-	return getSocketAtRowColumn(row, column);
+	if( withinBound( x, y ) )
+	{
+		int column = getColumnFromXCoord(x);
+		int row = getRowFromYCoord(y);
+		selectedSocket = getSocketAtRowColumn(row, column);
+	}
+	return selectedSocket;
 }
 

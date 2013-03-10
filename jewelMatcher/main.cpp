@@ -267,7 +267,18 @@ int main( int argc, char* args[] )
 					// Check if click occurred within grid
 					if( gameGrid->withinBound( mX, mY ) ) 
 					{
-						//
+						// Collect pointer to socket being upclicked
+						Socket* selectedSocket = gameGrid->getSocketAtCoordinates( mX, mY );
+						if( selectedSocket != NULL )
+						{
+							// Up-click was on a socket
+							message = TTF_RenderText_Solid( font, "Clicky!", textColor );
+						}
+					}
+					else
+					{
+						// Up-click occurred outside of the grid
+						message = TTF_RenderText_Solid( font, "Bad click!", textColor );
 					}
 				}
 			}

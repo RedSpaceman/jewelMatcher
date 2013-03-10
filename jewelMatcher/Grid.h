@@ -48,7 +48,8 @@ class Grid{
 
 		bool Grid::withinBound(int x, int y);
 
-		Socket* Grid::getUpClickedSocket(int x, int y);
+		// Given screen coordinates checked for grid-validity, then used to return a pointer to socket at that location
+		Socket* Grid::getSocketAtCoordinates(int x, int y);
 };
 
 #endif
