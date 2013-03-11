@@ -58,7 +58,7 @@ void Grid::populateSockets()
 			attemptColorGroupScramble(colorGroups);
 			// Verify if color group scrambling removed all color groups
 			colorGroups = findColorGroups();
-			if( colorGroups.size() > 0 )
+			if( colorGroups.size() == 0 )
 			{
 				acceptBoard = true;
 			}
@@ -239,94 +239,113 @@ std::vector<ColorGroup*> Grid::findColorGroups()
 	std::vector<Socket*> matchingSockets;
 
 	// Flag to indicate current potential colorGroup is complete (mismatch or end of row encountered)
-	bool scoreAndReset = false;
+	bool colorGroupEnded = false;
+	// Flag to indicate that current socket should be inserted into a new color group (occurs only when current group ends)
+	bool addSocketToNextGroup = false;
+	// Track color of current group so it can be compared to next socket in row (default non-color 'z')
 	char currentGroupColor = 'z';
+	char currentSocketColor = 'z';
 
-	// Run along rows, counting consecutive colours
+	// Check for HORIZONTAL groups by running along rows
 	for( int socketIndex = 0; socketIndex < sockets.size(); socketIndex++ )
 	{
 		Socket* nextSocket = sockets.at( socketIndex );
-
-		// If a new row, create a new color group
-		if( ( socketIndex % gridWidth ) == 0 )
-		{
-			matchingSockets.clear();
-		}
-
-		char nextJewelColor = nextSocket->getCurrentJewelType();
+		currentSocketColor = nextSocket->getCurrentJewelType();
 		
-		// Color match checking occurs during attempt to add socket to current group
-		// Also check whether socket is last in row, which causes end of current color group
-		bool endOfRow = ( ( ( socketIndex + 1 ) % gridWidth ) == 0 );
-		if( matchingSockets.size() == 0 )
+		int totalSockets = matchingSockets.size();
+
+		// Check if socket color matches current group color
+		if( currentSocketColor == currentGroupColor || matchingSockets.empty() )
 		{
-			// This socket is first in new set, so push it in
+			// Insert this socket into matching group
 			matchingSockets.push_back( nextSocket );
-			currentGroupColor = nextSocket->getCurrentJewelType();
+			// Store color for comparisons
+			currentGroupColor = currentSocketColor;
 		}
 		else
 		{
-			// If color matches existing colors of first entry, push new socket into set
-			if( nextJewelColor == currentGroupColor )
-			{
-				matchingSockets.push_back( nextSocket );
-				currentGroupColor = nextSocket->getCurrentJewelType();
-			}
-			else
-			{
-				scoreAndReset = true;
-			}
-		}
-		int nextGroupSize = matchingSockets.size();
-		// Check if end of row
-		if( endOfRow )
-		{
-			scoreAndReset = true;
+			// Jewel-type mismatch, so any existing matching-streak has ended
+			colorGroupEnded = true;
+			// This socket may be able to start a new streak as a new color group
+			addSocketToNextGroup = true;
 		}
 
-		// If end of row, clear the matchingSockets vector
-		if( scoreAndReset )
+		// Check if this socket is the last in the row, therefore ending any color group matching streak
+		bool endOfRow = ( ( ( socketIndex + 1 ) % gridWidth ) == 0 );
+		if( endOfRow )
 		{
-			scoreAndReset = false;
-			if( matchingSockets.size() >= minimumGroupLength )
+			// Color group cannot continue past end of 
+			colorGroupEnded = true;
+			// Next color group will be on next row, so current socket cannot join that group
+			addSocketToNextGroup = false;
+		}
+
+		// Verify potential group's induction into colorGroups vector
+		if( colorGroupEnded )
+		{	
+			// Reset flag for next group
+			colorGroupEnded = false;
+
+			totalSockets = matchingSockets.size();
+			// Minimim length must be met to form valid color group
+			if( totalSockets >= minimumGroupLength )
 			{
 				colorGroups.push_back( new ColorGroup( matchingSockets ) );
-				printf("points!");
 			}
-			// Prepare for next potential color group
 			matchingSockets.clear();
-			// Socket that caused color match failure must be first entry in next potential group
-			if( !endOfRow )
-			{
-				matchingSockets.push_back( nextSocket );
-				currentGroupColor = nextSocket->getCurrentJewelType();
-			}
+			// Set color back to default non-color to prevent affecting next group's matching
+			currentGroupColor = 'z';
+		}
+
+		// Check whether current socket should be inserted into new potential group (occurs when color-mismatch found on non-row-end)
+		if( addSocketToNextGroup )
+		{
+			matchingSockets.push_back( nextSocket );
+			currentGroupColor = currentSocketColor;
+
+			// Reset flag for next group
+			addSocketToNextGroup = false;
 		}
 	}
 	
-	// Check for vertical groups in each columns
-	/*
+	// Check for VERTICAL groups in each column
 	for( int columnIndex = 0; columnIndex < gridWidth; columnIndex++ )
 	{
+		// Prevent color groups in separate columns affecting each other
+		matchingSockets.clear();
+		currentGroupColor = 'z';
+
 		// For each column there is the same number of socket indices between the top and bottom socket
 		int bottomSocketIndexInColumn = columnIndex + ( gridWidth * ( gridWidth - 1 ));
 		// For each consecutive column-wise entry, socketIndex increases by gridWidth
 		for( int socketIndex = columnIndex; socketIndex < bottomSocketIndexInColumn; socketIndex += gridWidth )
 		{
-			// Color match checking occurs during attempt to add socket to current group
-			// Also check whether socket is last in column, which causes end of current color group
-			bool successfulGroupAddition = nextColorGroup->addSocketToGroup( sockets.at(socketIndex) );
-			if( (successfulGroupAddition) || socketIndex == bottomSocketIndexInColumn )
+			Socket* nextSocket = sockets.at( socketIndex );
+			currentSocketColor = nextSocket->getCurrentJewelType();
+			
+			if( currentSocketColor == currentGroupColor || matchingSockets.empty() )
 			{
+				// Socket matched group and so can be added to it
+				matchingSockets.push_back( nextSocket );
+				currentGroupColor = currentSocketColor;
+			}
+			else
+			{
+				// Mis-match detected, so current group ends
+
 				// Check if minimum length for scoring was reached
-				if( nextColorGroup->getGroupSize() >= minimumGroupLength )
+				if( matchingSockets.size() >= minimumGroupLength )
 				{
-					colorGroups.push_back( nextColorGroup );
+					colorGroups.push_back( new ColorGroup( matchingSockets ) );
 					printf("points!");
 				}
+				// Mismatched socket becomes first element in next group
+				matchingSockets.clear();
+				matchingSockets.push_back( nextSocket );
+				currentGroupColor = currentSocketColor;
 			}
 		}
 	}
-	*/
+	
 	return colorGroups;
 }
