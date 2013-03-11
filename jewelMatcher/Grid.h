@@ -4,6 +4,7 @@
 #include "SDL.h"
 #include <vector>
 
+#include "ColorGroup.h"
 #include "Socket.h"
 
 class Grid{
@@ -27,6 +28,8 @@ class Grid{
 		void Grid::generateSockets();
 		// Fill all sockets with jewels
 		void Grid::populateSockets();
+		// Randomises jewels in sockets that belong to existing color groups
+		void Grid::attemptColorGroupScramble(std::vector<ColorGroup*> &colorGroups);
 
 		int getGridWidth();
 
@@ -61,7 +64,7 @@ class Grid{
 		bool Grid::moveJewelsToDestinations();
 
 		// Searches the grid for locations where jewels of the same colour form lines of greater than three
-		int Grid::findColorGroups();
+		std::vector<ColorGroup*> Grid::findColorGroups();
 };
 
 #endif

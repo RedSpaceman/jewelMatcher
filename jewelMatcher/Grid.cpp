@@ -47,16 +47,41 @@ void Grid::populateSockets()
 			sockets.at(i)->generateJewel( jewelBound );
 		}
 
+		std::vector<ColorGroup*> colorGroups = findColorGroups();
 		// Check board for pre-existing color groups
-		if( findColorGroups() > 0 )
+		if( colorGroups.size() > 0 )
 		{
 			// Delete board and try again
 			boardGenNumber++;
+			
+			// Scramble color group sockets
+			attemptColorGroupScramble(colorGroups);
+			// Verify if color group scrambling removed all color groups
+			colorGroups = findColorGroups();
+			if( colorGroups.size() > 0 )
+			{
+				acceptBoard = true;
+			}
 		}
 		else
 		{
 			// Generated board is acceptable!
 			acceptBoard = true;
+		}
+	}
+}
+
+void Grid::attemptColorGroupScramble(std::vector<ColorGroup*> &colorGroups)
+{
+	// Attempt to scramble existing color group in an attempt to accelerate grid regeneration
+	for(std::vector<ColorGroup*>::iterator colorGroupItr = colorGroups.begin(); colorGroupItr != colorGroups.end(); colorGroupItr++)
+	{
+		std::vector<Socket*>::iterator socketsBegin = (*colorGroupItr)->getGroupSocketsBeginning();
+		std::vector<Socket*>::iterator socketsEnd = (*colorGroupItr)->getGroupSocketsEnd();
+		// Regenerate jewel for each socket in colorGroup
+		for(std::vector<Socket*>::iterator socketItr = socketsBegin; socketItr != socketsEnd; socketItr++)
+		{
+			(*socketItr)->generateJewel( (*socketItr)->getSocketBound() );
 		}
 	}
 }
@@ -203,65 +228,84 @@ bool Grid::attemptJewelExchange( Socket* firstSocket, Socket* secondSocket )
 	return false;
 }
 
-int Grid::findColorGroups()
+std::vector<ColorGroup*> Grid::findColorGroups()
 {
 	// Definition: Color groups are like-colored jewels in groups >=3 in a line
+	int minimumGroupLength = 3;
 
-	// Counter for total point-scoring groups found
-	int totalColorGroups = 0;
-	// Counter for how many jewels belong to the color group currently being tracked
-	int jewelsInCurrentGroup = 0;
-	// Color next jewel must match to be part of the current color group (default to non-colour value)
-	char currentGroupColor = 'z';
-	// Flag to indicate whether the current group has ended (end of row or non-match found)
+	// Vector used to track all ColorGroups found so they can be scored together at end of search
+	std::vector<ColorGroup*> colorGroups;
+	// Next potential ColorGroup in progress stored in nextColorGroup
+	std::vector<Socket*> matchingSockets;
+
+	// Flag to indicate current potential colorGroup is complete (mismatch or end of row encountered)
 	bool scoreAndReset = false;
+	char currentGroupColor = 'z';
 
 	// Run along rows, counting consecutive colours
-	for( int socketIndex = 0; socketIndex < sockets.size(); socketIndex++)
+	for( int socketIndex = 0; socketIndex < sockets.size(); socketIndex++ )
 	{
-		char nextJewelColor = sockets.at( socketIndex )->getCurrentJewelType();
-		
-		// Check color match, ensuring next socket isn't the first of a new row
-		if( nextJewelColor == currentGroupColor )
+		Socket* nextSocket = sockets.at( socketIndex );
+
+		// If a new row, create a new color group
+		if( ( socketIndex % gridWidth ) == 0 )
 		{
-			// Added this jewel to the current color group
-			jewelsInCurrentGroup++;
+			matchingSockets.clear();
+		}
+
+		char nextJewelColor = nextSocket->getCurrentJewelType();
+		
+		// Color match checking occurs during attempt to add socket to current group
+		// Also check whether socket is last in row, which causes end of current color group
+		bool endOfRow = ( ( ( socketIndex + 1 ) % gridWidth ) == 0 );
+		if( matchingSockets.size() == 0 )
+		{
+			// This socket is first in new set, so push it in
+			matchingSockets.push_back( nextSocket );
+			currentGroupColor = nextSocket->getCurrentJewelType();
 		}
 		else
 		{
-			// Jewels did not match, so current color group ends
-			scoreAndReset = true;
+			// If color matches existing colors of first entry, push new socket into set
+			if( nextJewelColor == currentGroupColor )
+			{
+				matchingSockets.push_back( nextSocket );
+				currentGroupColor = nextSocket->getCurrentJewelType();
+			}
+			else
+			{
+				scoreAndReset = true;
+			}
 		}
-
-		// Check if socket is last on the row
-		if( (( socketIndex + 1 ) % gridWidth ) == 0 )
+		int nextGroupSize = matchingSockets.size();
+		// Check if end of row
+		if( endOfRow )
 		{
-			// End of row reached
 			scoreAndReset = true;
 		}
 
-		// If a match fails, or the end of a row is reached, 
+		// If end of row, clear the matchingSockets vector
 		if( scoreAndReset )
 		{
-			// Check if existing color group was point scoring size
-			if( jewelsInCurrentGroup >= 3 )
+			scoreAndReset = false;
+			if( matchingSockets.size() >= minimumGroupLength )
 			{
-				// Point scoring group was formed 
-				totalColorGroups++;
-				// TODO: Award points
+				colorGroups.push_back( new ColorGroup( matchingSockets ) );
 				printf("points!");
 			}
-			// Reset group tracking using current color, current jewel counts as first in next potential group
-			jewelsInCurrentGroup = 1;
-			currentGroupColor = nextJewelColor;
-			scoreAndReset = false;
+			// Prepare for next potential color group
+			matchingSockets.clear();
+			// Socket that caused color match failure must be first entry in next potential group
+			if( !endOfRow )
+			{
+				matchingSockets.push_back( nextSocket );
+				currentGroupColor = nextSocket->getCurrentJewelType();
+			}
 		}
 	}
 	
 	// Check for vertical groups in each columns
-	jewelsInCurrentGroup = 0;
-	currentGroupColor = 'z';
-	scoreAndReset = false;
+	/*
 	for( int columnIndex = 0; columnIndex < gridWidth; columnIndex++ )
 	{
 		// For each column there is the same number of socket indices between the top and bottom socket
@@ -269,40 +313,20 @@ int Grid::findColorGroups()
 		// For each consecutive column-wise entry, socketIndex increases by gridWidth
 		for( int socketIndex = columnIndex; socketIndex < bottomSocketIndexInColumn; socketIndex += gridWidth )
 		{
-			char nextJewelColor = sockets.at(socketIndex)->getCurrentJewelType();
-			
-			// Check for jewel color match
-			if( currentGroupColor == nextJewelColor )
+			// Color match checking occurs during attempt to add socket to current group
+			// Also check whether socket is last in column, which causes end of current color group
+			bool successfulGroupAddition = nextColorGroup->addSocketToGroup( sockets.at(socketIndex) );
+			if( (successfulGroupAddition) || socketIndex == bottomSocketIndexInColumn )
 			{
-				jewelsInCurrentGroup++;
-			}
-			else
-			{
-				scoreAndReset = true;
-			}
-
-			// Check if socket is bottom in column
-			if( socketIndex == bottomSocketIndexInColumn )
-			{
-				scoreAndReset = true;
-			}
-
-			if( scoreAndReset )
-			{
-				// Check if existing color group was point scoring size
-				if( jewelsInCurrentGroup >= 3 )
+				// Check if minimum length for scoring was reached
+				if( nextColorGroup->getGroupSize() >= minimumGroupLength )
 				{
-					// Point scoring group was formed 
-					totalColorGroups++;
-					// TODO: Award points
+					colorGroups.push_back( nextColorGroup );
 					printf("points!");
 				}
-				// Reset group tracking using current color, current jewel counts as first in next potential group
-				jewelsInCurrentGroup = 1;
-				currentGroupColor = nextJewelColor;
-				scoreAndReset = false;
 			}
 		}
 	}
-	return totalColorGroups;
+	*/
+	return colorGroups;
 }

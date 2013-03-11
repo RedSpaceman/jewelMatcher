@@ -305,8 +305,8 @@ int main( int argc, char* args[] )
 								{	
 									gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
 									// Check whether jewel switch has created color groups
-									int totalColorGroups = gameGrid->findColorGroups();
-									if( totalColorGroups > 0)
+									std::vector<ColorGroup*> colorGroups = gameGrid->findColorGroups();
+									if( colorGroups.size() > 0)
 									{
 										// Created matching sets, therefore was valid move
 										printf("yes!");
