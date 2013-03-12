@@ -35,7 +35,21 @@ Jewel* Socket::getCurrentJewel()
 
 char Socket::getCurrentJewelType()
 {
-	return currentJewel->getJewelType();
+	if( currentJewel != NULL )
+	{
+		return currentJewel->getJewelType();
+	}
+	// Return non-color value
+	return 'a';
+}
+
+bool Socket::containsJewel()
+{
+	if( currentJewel != NULL )
+	{
+		return true;
+	}
+	return false;
 }
 
 void Socket::generateJewel( SDL_Rect newJewelBound )
@@ -57,4 +71,9 @@ Jewel* Socket::relinquishJewel()
 	{
 		return NULL;
 	}	
+}
+
+void Socket::discardJewel()
+{
+	currentJewel = NULL;
 }

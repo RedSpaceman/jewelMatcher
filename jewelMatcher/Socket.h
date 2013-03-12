@@ -19,9 +19,15 @@ class Socket
 
 		Jewel* getCurrentJewel();
 		char getCurrentJewelType();
+		
+		// Indicates if socket currently contains a jewel
+		bool Socket::containsJewel();
 
 		void generateJewel( SDL_Rect newJewelBound );
 		Jewel* relinquishJewel();
+
+		// Set currentJewel to NULL, discarding the socket's contents
+		void Socket::discardJewel();
 
 };
 
