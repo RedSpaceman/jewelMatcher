@@ -47,6 +47,10 @@ int CELL_H = 42;
 int GRID_CENTRE_X = 500;
 int GRID_CENTRE_Y = 275;
 
+// Track mouse coordinates
+int mouseX = 0;
+int mouseY = 0;
+
 // Game score counts points player has earned during current game
 int gameScore = 0;
 
@@ -169,7 +173,8 @@ bool init()
 	SDL_WM_SetCaption( "Jewel Matcher", NULL );
 
 	// Seed random function with time to hide determinism
-	srand(time(NULL));
+	//srand((int)time(NULL));
+	srand(545);
 
 	return true;
 }
@@ -254,8 +259,8 @@ int main( int argc, char* args[] )
 		return 1;
 	}
 
-	SDL_Surface* upMessage = TTF_RenderText_Solid( font, "Up pressed", textColor );
-	SDL_Surface* downMessage = TTF_RenderText_Solid( font, "Down pressed", textColor );
+	SDL_Surface* titleMessage =	TTF_RenderText_Solid( font, "Jewel Matcher", textColor );
+	SDL_Surface* pausedMessage = TTF_RenderText_Solid( font, "Paused", textColor );
 
 	//Apply image to screen
 	apply_surface( 0, 0, backgroundImage, screen );
@@ -263,6 +268,11 @@ int main( int argc, char* args[] )
 	// Construct Grid of Sockets and Jewels
 	// Based on arbitary grid width provided, determine grid starting coordinates
 	Grid* gameGrid = new Grid(GRID_SIZE, GRID_CENTRE_X, GRID_CENTRE_Y, CELL_W, CELL_H);
+
+	// Pausing prevents game behaviours, stops timer, stops interaction other than unpausing, but continues draw calls
+	bool isPaused = false;
+	// If the game is animating someting, interaction is prevented
+	bool gridReady = true;
 
 	//Pause
 	while( quit == false )
@@ -277,95 +287,118 @@ int main( int argc, char* args[] )
 				quit = true;
 			}
 
-			if ( event.type == SDL_KEYDOWN )
+			// Track mouse coordinates
+			if( event.type == SDL_MOUSEMOTION )
 			{
-				switch( event.key.keysym.sym )
+				mouseX = event.motion.x;
+				mouseY = event.motion.y;
+			}
+
+			// On key-up of 'p' key, pause the game
+			if ( event.type == SDL_KEYUP )
+			{
+				if( event.key.keysym.sym == SDLK_p )
 				{
-					case SDLK_UP: message = upMessage; break;
-					case SDLK_DOWN: message = downMessage; break;
+					// Toggling pause
+					isPaused = !isPaused;
 				}
 			}
 
-			if ( event.type == SDL_MOUSEBUTTONUP )
+			if( isPaused )
 			{
-				// Click-down's don't matter as much as click-ups
-				if( event.button.button == SDL_BUTTON_LEFT )
+				message = pausedMessage;
+			}
+			else
+			{
+				message = titleMessage;
+
+				// Reset flag before checking conditions
+				gridReady = false;
+				// Check if sockets are full
+				gridReady = gameGrid->socketsAreFull();
+				// Check if jewels are moving
+				gridReady = gameGrid->jewelsAreStatic();
+
+
+				// Only allow user mouse interaction if game is not handling grid animation etc
+				if( gridReady )
 				{
-					// Get mouse offsets
-					int mX = event.button.x;
-					int mY = event.button.y;
-					// Check if click occurred within grid
-					if( gameGrid->withinBound( mX, mY ) ) 
+					// User Game interaction - EVENTS WHICH OCCUR WHEN BOARD IS STATIC
+					if ( event.type == SDL_MOUSEBUTTONUP )
 					{
-						// Collect pointer to socket being upclicked
-						Socket* upClickedSocket = gameGrid->getSocketAtCoordinates( mX, mY );
-						if( upClickedSocket != NULL )
+						// Click-down's don't matter as much as click-ups
+						if( event.button.button == SDL_BUTTON_LEFT )
 						{
-							// Up-click was on a socket...
-							// Add socket to selection vector
-							selectedSockets.push_back(upClickedSocket);
-							int currentSelectionSize = (int)selectedSockets.size();
+							// Get mouse offsets
+							int mClickX = event.button.x;
+							int mClickY = event.button.y;
+							// Check if click occurred within grid
+							if( gameGrid->withinBound( mClickX, mClickY ) ) 
+							{
+								// Collect pointer to socket being upclicked
+								Socket* upClickedSocket = gameGrid->getSocketAtCoordinates( mClickX, mClickY );
+								if( upClickedSocket != NULL )
+								{
+									// Up-click was on a socket...
+									// Add socket to selection vector
+									selectedSockets.push_back(upClickedSocket);
+									int currentSelectionSize = (int)selectedSockets.size();
 							
-							// Vary behaviour, dependent on how many sockets are currently selected
-							if( currentSelectionSize == 1 )
-							{
-								// A socket is selected
-								printf("One socket selected");
-							}
-							else if( currentSelectionSize == 2 )
-							{
-								// Once two sockets are selected, attempt jewel exchange validation and execution
-								// If selection was same socket twice, deselection should be the only action
-								if( selectedSockets.at(0) != selectedSockets.at(1) )
-								{	
-									gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+									// Vary behaviour, dependent on how many sockets are currently selected
+									if( currentSelectionSize == 1 )
+									{
+										// A socket is selected
+										printf("One socket selected");
+									}
+									else if( currentSelectionSize == 2 )
+									{
+										// Once two sockets are selected, attempt jewel exchange validation and execution
+										// If selection was same socket twice, deselection should be the only action
+										if( selectedSockets.at(0) != selectedSockets.at(1) )
+										{	
+											gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
 
-									// Check whether jewel switch has created color groups by attempting to detect and score them							
-									if( gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore ) > 0 )
-									{
-										printf("yes!");									 
+											// Check whether jewel switch has created color groups by attempting to detect and score them							
+											if( gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore ) > 0 )
+											{
+												printf("yes!");									 
+											}
+											else
+											{
+												// No matching sets created; move was invalid so switch back
+												printf("no!");
+												gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+											}
+										}
+										selectedSockets.clear();
 									}
-									else
+									else if( currentSelectionSize > 2 )
 									{
-										// No matching sets created; move was invalid so switch back
-										printf("no!");
-										gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+										// Should not be able to select more than two, so error has occurred
+										std::cout << "Selection error has occured. " << selectedSockets.size() << " sockets were selected. Clearing selection." << std::endl;
+										selectedSockets.clear();
 									}
-								}
+								}						
+							}
+							else
+							{							
+								// Clicking outside of the grid is used for deselection
 								selectedSockets.clear();
 							}
-							else if( currentSelectionSize > 2 )
-							{
-								// Should not be able to select more than two, so error has occurred
-								std::cout << "Selection error has occured. " << selectedSockets.size() << " sockets were selected. Clearing selection." << std::endl;
-								selectedSockets.clear();
-							}
-
-							// Change stand-in message regarding selections
-							std::stringstream selectionSize;
-							selectionSize << "Selection: " << selectedSockets.size();
-							message = TTF_RenderText_Solid( font, selectionSize.str().c_str(), textColor );
-						}						
-					}
-					else
-					{
-						// Up-click occurred outside of the grid
-						// ...therefore deselect currently selected socket
-						message = TTF_RenderText_Solid( font, "Bad click!", textColor );
-						// Clicking outside of the grid is used for deselection
-						selectedSockets.clear();
-					}
-				}
-			}
+						}
+					} // End of mouse-up behaviours
+				} // End of gridReady statement
+			} // End of pause/!pause statements
 		}
+
+		// Draw back game visuals
+		apply_surface( 0, 0, backgroundImage, screen );
+		drawGrid( gameGrid );
 
 		// Refresh message
 		if ( message != NULL )
-		{
-			apply_surface( 0, 0, backgroundImage, screen );
-			drawGrid( gameGrid );
+		{			
 			apply_surface( 400, 55, message, screen);
-			message = NULL;
 		}
 
 		//Update screen

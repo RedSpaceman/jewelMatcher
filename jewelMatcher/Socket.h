@@ -24,11 +24,19 @@ class Socket
 		bool Socket::containsJewel();
 
 		void generateJewel( SDL_Rect newJewelBound );
+		// Allows jewel to be spawned in initial location relative to socket coordinates
+		void Socket::generateOffsetJewel( int x, int y );
+
 		Jewel* relinquishJewel();
 
 		// Set currentJewel to NULL, discarding the socket's contents
 		void Socket::discardJewel();
 
+		// If the socket contains a jewel, the Rect param will be jewel's new target location, returning false if no jewel found
+		bool Socket::setJewelDestination( SDL_Rect newDestination );
+
+		// Moves jewel towards destination, returning true upon reaching it
+		bool Socket::moveJewelToDestination();
 };
 
 #endif

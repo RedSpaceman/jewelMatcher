@@ -21,7 +21,13 @@ class Jewel {
 		void Jewel::setNewDestination(SDL_Rect newDest);
 
 		SDL_Rect getJewelBound();
-		char getJewelType();		
+		char getJewelType();	
+
+		// Moves jewel from bound location towards destination, returning true if destination is reached
+		bool Jewel::moveToDestination();
+
+		// If the jewel's bound and destination do not match, the jewel must be moving
+		bool Jewel::inTransit();
 };
 
 #endif

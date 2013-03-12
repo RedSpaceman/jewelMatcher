@@ -20,8 +20,6 @@ Jewel::Jewel(SDL_Rect newJewelBound, char newJewelType)
 void Jewel::setNewDestination(SDL_Rect newDest)
 {
 	destination = newDest;
-	// TODO: Change from 'arrive immediately' to an updated partial movement
-	jewelBound = destination;
 }
 
 SDL_Rect Jewel::getJewelBound()
@@ -59,4 +57,23 @@ char Jewel::getRandomJewelType(){
 	}
 
 	return chosenJewelType;
+}
+
+bool Jewel::moveToDestination()
+{
+	// TODO: Make movement non-instant
+	jewelBound = destination;
+	return true;
+}
+
+bool Jewel::inTransit()
+{
+	// Only care about coordinates, rather than w & h as well
+	if( jewelBound.x == destination.x 
+		&& jewelBound.y == destination.y )
+	{
+		// jewel is not moving
+		return false;
+	}
+	return true;
 }

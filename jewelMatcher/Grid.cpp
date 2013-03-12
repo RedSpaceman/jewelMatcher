@@ -337,7 +337,6 @@ std::vector<ColorGroup*> Grid::findColorGroups()
 				if( matchingSockets.size() >= minimumGroupLength )
 				{
 					colorGroups.push_back( new ColorGroup( matchingSockets ) );
-					printf("points!");
 				}
 				// Mismatched socket becomes first element in next group
 				matchingSockets.clear();
@@ -352,7 +351,6 @@ std::vector<ColorGroup*> Grid::findColorGroups()
 
 int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore)
 {
-	int validGroupsSize = validGroups.size();
 	// If there were no valid groups detected (passed to this function), indicate failure
 	if( validGroups.empty() )
 	{
@@ -387,4 +385,66 @@ int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScor
 	}
 
 	return colorGroupsScored;
+}
+
+bool Grid::socketsAreFull()
+{
+	bool socketsAreFull = true;
+	// Iterate BACKWARDS over all sockets, checking if they have jewels
+	// Backwards iteration allows bottom rows to be collapsed first, which seems more logical 
+	//   (sockets stolen from then subsequently steal during same loop)
+	// Top row is excluded from this
+	for( int i = sockets.size()-1; i >= gridWidth; i-- )
+	{
+		Socket* socket = sockets.at( i );
+		if( socket->getCurrentJewel() == NULL )
+		{
+			// Indicate that at least one empty socket was discovered
+			socketsAreFull = false;
+
+			// This socket is missing a jewel and must attempt to steal one from the socket above
+			socket->setJewel( sockets.at( i-gridWidth )->relinquishJewel() );
+			// Set jewel destination
+			socket->setJewelDestination( socket->getSocketBound() );
+			socket->moveJewelToDestination();
+		}
+	}
+
+	// Top row cannot steal jewels from above and so must generate new jewels
+	for( int i = gridWidth - 1; i >= 0; i-- )
+	{
+		Socket* socket = sockets.at( i );
+		if( socket->getCurrentJewel() == NULL )
+		{
+			// Indicate that at least one empty socket was discovered
+			socketsAreFull = false;
+	
+			// Generate jewel one socket-width higher than this socket
+			socket->generateOffsetJewel( 0, -cellHeight );
+			// Set the jewel's destination as socket so it will fall
+			socket->getCurrentJewel()->setNewDestination( socket->getSocketBound() );
+			socket->moveJewelToDestination();
+		}
+	}
+
+	return true;
+}
+
+bool Grid::jewelsAreStatic()
+{
+	bool jewelsAreStatic = true;
+	// Iterate through sockets, checking if jewelBound locations match the jewel destination
+	for( int i = 0; i < sockets.size(); i++ )
+	{
+		Socket* socket = sockets.at( i );
+		Jewel* currentJewel = socket->getCurrentJewel();
+		if( currentJewel != NULL )
+		{
+			if( currentJewel->inTransit() )
+			{
+				jewelsAreStatic = false;
+			}
+		}
+	}
+	return true;
 }

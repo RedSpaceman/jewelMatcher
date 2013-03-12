@@ -69,6 +69,12 @@ class Grid{
 		// Receives detected color groups, removes the jewels from their sockets and scores them, returning number of groups scored
 		int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore);
 
+		// True if sockets all have jewels, collapse board and return false if not
+		bool Grid::socketsAreFull();
+
+		// True if no jewels are in transit
+		bool Grid::jewelsAreStatic();
+
 };
 
 #endif

@@ -57,6 +57,15 @@ void Socket::generateJewel( SDL_Rect newJewelBound )
 	currentJewel = new Jewel( newJewelBound );
 }
 
+void Socket::generateOffsetJewel( int x, int y )
+{	
+	// Use socket coordinates as starting point to which offset is applied
+	SDL_Rect newJewelBound = getSocketBound();
+	newJewelBound.x += x;
+	newJewelBound.y += y;
+	generateJewel( newJewelBound );
+}
+
 // When called by another socket, this socket must hand-over its jewel
 Jewel* Socket::relinquishJewel()
 {
@@ -76,4 +85,19 @@ Jewel* Socket::relinquishJewel()
 void Socket::discardJewel()
 {
 	currentJewel = NULL;
+}
+
+bool Socket::setJewelDestination( SDL_Rect newDestination )
+{
+	if( getCurrentJewel() != NULL )
+	{
+		getCurrentJewel()->setNewDestination( newDestination );
+		return true;
+	}
+	return false;
+}
+
+bool Socket::moveJewelToDestination()
+{
+	return getCurrentJewel()->moveToDestination();
 }
