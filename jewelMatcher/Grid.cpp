@@ -435,10 +435,16 @@ bool Grid::socketsAreFull()
 			socketsAreFull = false;
 
 			// This socket is missing a jewel and must attempt to steal one from the socket above
-			socket->setJewel( sockets.at( i-gridWidth )->relinquishJewel() );
-			// Set jewel destination
-			socket->setJewelDestination( socket->getSocketBound() );
-			socket->moveJewelToDestination();
+			Jewel* stolenJewel = sockets.at( i-gridWidth )->relinquishJewel();
+			if( stolenJewel != NULL )
+			{
+				if( socket->setJewel( stolenJewel ) )
+				{
+					// Set jewel destination
+					socket->setJewelDestination( socket->getSocketBound() );
+					socket->moveJewelToDestination();
+				}
+			}
 		}
 	}
 
