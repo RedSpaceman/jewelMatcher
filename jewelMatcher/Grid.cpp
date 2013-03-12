@@ -292,19 +292,23 @@ std::vector<ColorGroup*> Grid::findColorGroups()
 			{
 				colorGroups.push_back( new ColorGroup( matchingSockets ) );
 			}
+			// Empty container, ready for next group
 			matchingSockets.clear();
-			// Set color back to default non-color to prevent affecting next group's matching
-			currentGroupColor = 'z';
-		}
-
-		// Check whether current socket should be inserted into new potential group (occurs when color-mismatch found on non-row-end)
-		if( addSocketToNextGroup )
-		{
-			matchingSockets.push_back( nextSocket );
-			currentGroupColor = currentSocketColor;
-
-			// Reset flag for next group
-			addSocketToNextGroup = false;
+		
+			// Check whether current socket should be inserted into new potential group (occurs when color-mismatch found on non-row-end)
+			if( addSocketToNextGroup )
+			{
+				// Reset flag for next group
+				addSocketToNextGroup = false;
+				
+				matchingSockets.push_back( nextSocket );
+				currentGroupColor = currentSocketColor;
+			}
+			else
+			{
+				// Set color back to default non-color to prevent affecting next group's matching
+				currentGroupColor = 'z';
+			}
 		}
 	}
 	
@@ -314,34 +318,61 @@ std::vector<ColorGroup*> Grid::findColorGroups()
 		// Prevent color groups in separate columns affecting each other
 		matchingSockets.clear();
 		currentGroupColor = 'z';
+		addSocketToNextGroup = true;
+		colorGroupEnded = true;
 
 		// For each column there is the same number of socket indices between the top and bottom socket
 		int bottomSocketIndexInColumn = columnIndex + ( gridWidth * ( gridWidth - 1 ));
 		// For each consecutive column-wise entry, socketIndex increases by gridWidth
-		for( int socketIndex = columnIndex; socketIndex < bottomSocketIndexInColumn; socketIndex += gridWidth )
+		for( int socketIndex = columnIndex; socketIndex <= bottomSocketIndexInColumn; socketIndex += gridWidth )
 		{
 			Socket* nextSocket = sockets.at( socketIndex );
 			currentSocketColor = nextSocket->getCurrentJewelType();
 			
 			if( currentSocketColor == currentGroupColor || matchingSockets.empty() )
 			{
-				// Socket matched group and so can be added to it
+				// Socket matched group (or group had no entries) and so can be added to it
 				matchingSockets.push_back( nextSocket );
 				currentGroupColor = currentSocketColor;
+				colorGroupEnded = false;
+				addSocketToNextGroup = false;
 			}
 			else
 			{
 				// Mis-match detected, so current group ends
+				colorGroupEnded = true;
+				addSocketToNextGroup = true;
+			}
+
+			if( socketIndex == bottomSocketIndexInColumn )
+			{
+				colorGroupEnded = true;
+				addSocketToNextGroup = false;
+			}
+
+			// Once completed, potential groups are validated
+			if( colorGroupEnded )
+			{
+				// Reset flag
+				colorGroupEnded = false;
 
 				// Check if minimum length for scoring was reached
 				if( matchingSockets.size() >= minimumGroupLength )
 				{
 					colorGroups.push_back( new ColorGroup( matchingSockets ) );
 				}
-				// Mismatched socket becomes first element in next group
+				// Empty container, ready for next group
 				matchingSockets.clear();
-				matchingSockets.push_back( nextSocket );
-				currentGroupColor = currentSocketColor;
+
+				// Socket may be able to form first of next group
+				if ( addSocketToNextGroup )
+				{
+					// Reset flag
+					addSocketToNextGroup = false;
+
+					matchingSockets.push_back( nextSocket );
+					currentGroupColor = currentSocketColor;
+				}				
 			}
 		}
 	}
@@ -352,7 +383,8 @@ std::vector<ColorGroup*> Grid::findColorGroups()
 int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore)
 {
 	// If there were no valid groups detected (passed to this function), indicate failure
-	if( validGroups.empty() )
+	int totalValidGroups = validGroups.size();
+	if( totalValidGroups == 0 )
 	{
 		return 0;
 	}
