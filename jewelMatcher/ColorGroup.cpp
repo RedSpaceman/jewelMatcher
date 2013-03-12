@@ -13,25 +13,6 @@ ColorGroup::ColorGroup(std::vector<Socket*> includedSockets)
 	groupColor = socketsInGroup.at(0)->getCurrentJewelType();
 }
 
-bool ColorGroup::addSocketToGroup(Socket* socket)
-{
-	// Only add new socket if its a color match
-	if( groupColor == 'z' )
-	{
-		// This socket is first in group, so set group color
-		groupColor = socket->getCurrentJewelType();
-	}
-
-	if( groupColor ==  socket->getCurrentJewelType() )
-	{
-		// Color was a match
-		socketsInGroup.push_back(socket);
-		updateGroupBound();
-		return true;
-	}
-	return false;
-}
-
 void ColorGroup::updateGroupBound()
 {
 	if( socketsInGroup.size() > 0 )
@@ -56,6 +37,11 @@ void ColorGroup::updateGroupBound()
 int ColorGroup::getGroupSize()
 {
 	return socketsInGroup.size();
+}
+
+char ColorGroup::getGroupColor()
+{
+	return groupColor;
 }
 
 std::vector<Socket*>::iterator ColorGroup::getGroupSocketsBeginning()
