@@ -240,6 +240,54 @@ void clean_up()
     SDL_Quit();
 }
 
+void performSocketSelection( int x, int y, Grid* &gameGrid )
+{
+	// Collect pointer to socket being upclicked
+	Socket* upClickedSocket = gameGrid->getSocketAtCoordinates( x, y );
+	if( upClickedSocket != NULL )
+	{
+		// Add socket to selection vector
+		selectedSockets.push_back(upClickedSocket);
+		int currentSelectionSize = (int)selectedSockets.size();
+							
+		// Vary behaviour, dependent on how many sockets are currently selected
+		if( currentSelectionSize == 1 )
+		{
+			// A socket is selected
+			printf("One socket selected");
+		}
+		else if( currentSelectionSize == 2 )
+		{
+			// Once two sockets are selected, attempt jewel exchange validation and execution
+			// If selection was same socket twice, deselection should be the only action
+			if( selectedSockets.at(0) != selectedSockets.at(1) )
+			{	
+				gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+
+				// Check whether jewel switch has created color groups by attempting to detect and score them							
+				int totalGroupsScored = gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore );
+				if( totalGroupsScored > 0 )
+				{
+					printf("yes!");									 
+				}
+				else
+				{
+					// No matching sets created; move was invalid so switch back
+					printf("no!");
+					gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+				}
+			}
+			selectedSockets.clear();
+		}
+		else if( currentSelectionSize > 2 )
+		{
+			// Should not be able to select more than two, so error has occurred
+			std::cout << "Selection error has occured. " << selectedSockets.size() << " sockets were selected. Clearing selection." << std::endl;
+			selectedSockets.clear();
+		}
+	}
+}
+
 int main( int argc, char* args[] )
 {
 	bool quit = false;
@@ -273,6 +321,10 @@ int main( int argc, char* args[] )
 	bool isPaused = false;
 	// If the game is animating someting, interaction is prevented
 	bool gridReady = true;
+	// Track whether (and where) an upClick has occurred
+	bool upClickOccurred = false;
+	int mUpClickX = 0;
+	int mUpClickY = 0;
 
 	//Pause
 	while( quit == false )
@@ -304,93 +356,73 @@ int main( int argc, char* args[] )
 				}
 			}
 
-			if( isPaused )
+			// User Game interaction - EVENTS WHICH OCCUR WHEN BOARD IS STATIC
+			if ( event.type == SDL_MOUSEBUTTONUP )
 			{
-				message = pausedMessage;
+				// Click-down's don't matter as much as click-ups
+				if( event.button.button == SDL_BUTTON_LEFT )
+				{
+					upClickOccurred = true;
+					mUpClickX = event.button.x;
+					mUpClickY = event.button.y;
+				}
+			}
+		
+		} // End of poll event clearing
+
+
+
+
+		// Pause inhibits user input and animation
+		if( isPaused )
+		{
+			// Set message so user understands what state game is in and why interaction is halted.
+			message = pausedMessage;
+
+			// Up-Clicks occuring during paused game state are rejected
+			upClickOccurred = false;
+		}
+		else
+		{
+			
+			message = titleMessage;
+
+			// Reset flag before checking conditions
+			gridReady = false;
+			// Check if sockets are full
+			gridReady = gameGrid->socketsAreFull();
+			// Check if jewels are moving
+			gridReady = gameGrid->jewelsAreStatic();
+
+
+			// Only allow user mouse interaction if game is not handling grid animation etc
+			if( !gridReady )
+			{
+				// If grid is not ready...
+				// - prompt empty sockets to steal/generate jewels
+				// - prompt jewels to move towards their destinations
 			}
 			else
 			{
-				message = titleMessage;
-
-				// Reset flag before checking conditions
-				gridReady = false;
-				// Check if sockets are full
-				gridReady = gameGrid->socketsAreFull();
-				// Check if jewels are moving
-				gridReady = gameGrid->jewelsAreStatic();
-
-
-				// Only allow user mouse interaction if game is not handling grid animation etc
-				if( gridReady )
-				{
-					// User Game interaction - EVENTS WHICH OCCUR WHEN BOARD IS STATIC
-					if ( event.type == SDL_MOUSEBUTTONUP )
+				// If an upClick occurred, check if it was within grid
+				if( upClickOccurred )
+				{ 
+					if( gameGrid->withinBound( mUpClickX, mUpClickY ) ) 
 					{
-						// Click-down's don't matter as much as click-ups
-						if( event.button.button == SDL_BUTTON_LEFT )
-						{
-							// Get mouse offsets
-							int mClickX = event.button.x;
-							int mClickY = event.button.y;
-							// Check if click occurred within grid
-							if( gameGrid->withinBound( mClickX, mClickY ) ) 
-							{
-								// Collect pointer to socket being upclicked
-								Socket* upClickedSocket = gameGrid->getSocketAtCoordinates( mClickX, mClickY );
-								if( upClickedSocket != NULL )
-								{
-									// Up-click was on a socket...
-									// Add socket to selection vector
-									selectedSockets.push_back(upClickedSocket);
-									int currentSelectionSize = (int)selectedSockets.size();
-							
-									// Vary behaviour, dependent on how many sockets are currently selected
-									if( currentSelectionSize == 1 )
-									{
-										// A socket is selected
-										printf("One socket selected");
-									}
-									else if( currentSelectionSize == 2 )
-									{
-										// Once two sockets are selected, attempt jewel exchange validation and execution
-										// If selection was same socket twice, deselection should be the only action
-										if( selectedSockets.at(0) != selectedSockets.at(1) )
-										{	
-											gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+						// Reset the flag for the next upclick
+						upClickOccurred = false;
+						// Execute behaviour for selecting sockets at coordinates and handling resulting behaviour
+						performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
+					}
+					else
+					{							
+						// Clicking outside of the grid is used for deselection
+						selectedSockets.clear();
+					}
+				}
+			} // End of gridReady/!gridReady statement
+		} // End of pause/!pause statement
 
-											// Check whether jewel switch has created color groups by attempting to detect and score them							
-											int totalGroupsScored = gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore );
-											if( totalGroupsScored > 0 )
-											{
-												printf("yes!");									 
-											}
-											else
-											{
-												// No matching sets created; move was invalid so switch back
-												printf("no!");
-												gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-											}
-										}
-										selectedSockets.clear();
-									}
-									else if( currentSelectionSize > 2 )
-									{
-										// Should not be able to select more than two, so error has occurred
-										std::cout << "Selection error has occured. " << selectedSockets.size() << " sockets were selected. Clearing selection." << std::endl;
-										selectedSockets.clear();
-									}
-								}						
-							}
-							else
-							{							
-								// Clicking outside of the grid is used for deselection
-								selectedSockets.clear();
-							}
-						}
-					} // End of mouse-up behaviours
-				} // End of gridReady statement
-			} // End of pause/!pause statements
-		}
 
 		// Draw back game visuals
 		apply_surface( 0, 0, backgroundImage, screen );
