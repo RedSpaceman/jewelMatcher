@@ -319,12 +319,11 @@ int main( int argc, char* args[] )
 								if( selectedSockets.at(0) != selectedSockets.at(1) )
 								{	
 									gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-									// Check whether jewel switch has created color groups
-									std::vector<ColorGroup*> colorGroups = gameGrid->findColorGroups();
-									if( colorGroups.size() > 0)
+
+									// Check whether jewel switch has created color groups by attempting to detect and score them							
+									if( gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore ) > 0 )
 									{
-										// Created matching sets, therefore was valid move
-										printf("yes!");
+										printf("yes!");									 
 									}
 									else
 									{

@@ -55,7 +55,7 @@ void Grid::populateSockets()
 			boardGenNumber++;
 			
 			// Scramble color group sockets
-			attemptColorGroupScramble(colorGroups);
+			//attemptColorGroupScramble(colorGroups);
 			// Verify if color group scrambling removed all color groups
 			colorGroups = findColorGroups();
 			if( colorGroups.size() == 0 )
@@ -348,4 +348,43 @@ std::vector<ColorGroup*> Grid::findColorGroups()
 	}
 	
 	return colorGroups;
+}
+
+int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore)
+{
+	int validGroupsSize = validGroups.size();
+	// If there were no valid groups detected (passed to this function), indicate failure
+	if( validGroups.empty() )
+	{
+		return 0;
+	}
+
+	// Scoring Guide:
+	// Points rapidly increase with size, with an additional increasing bonus for additional color group scored
+	// score = ( baseMultiplier * (groupSize^2) ) + (totalColorGroups-1) * multiGroupBonus)
+	int baseMultiplier = 5;
+	int multiGroupBonus = 30;
+	
+	// Track number of groups scored so far in 
+	int colorGroupsScored = 0;
+
+	// Calculate scores for current groups
+	for( std::vector<ColorGroup*>::iterator groupItr = validGroups.begin(); groupItr != validGroups.end(); groupItr++ )
+	{
+		colorGroupsScored++;
+		int groupSizeSquared = (*groupItr)->getGroupSize() * (*groupItr)->getGroupSize();
+		gameScore += baseMultiplier * groupSizeSquared + ( ((colorGroupsScored-1)*(colorGroupsScored-1)) * multiGroupBonus);
+
+		// Remove jewels from scored sockets
+		std::vector<Socket*>::iterator socketsBegin = (*groupItr)->getGroupSocketsBeginning();
+		std::vector<Socket*>::iterator socketsEnd = (*groupItr)->getGroupSocketsEnd();
+		for( std::vector<Socket*>::iterator socketIterator = socketsBegin; socketIterator != socketsEnd; socketIterator++)
+		{
+			char jewelCol = (*socketIterator)->getCurrentJewelType();
+			// Remove currentJewel from socket
+			(*socketIterator)->discardJewel();
+		}
+	}
+
+	return colorGroupsScored;
 }

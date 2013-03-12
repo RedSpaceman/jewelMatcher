@@ -65,6 +65,10 @@ class Grid{
 
 		// Searches the grid for locations where jewels of the same colour form lines of greater than three
 		std::vector<ColorGroup*> Grid::findColorGroups();
+
+		// Receives detected color groups, removes the jewels from their sockets and scores them, returning number of groups scored
+		int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore);
+
 };
 
 #endif
