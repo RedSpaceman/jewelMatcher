@@ -415,6 +415,7 @@ int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScor
 			(*socketIterator)->discardJewel();
 		}
 	}
+	validGroups.clear();
 
 	return colorGroupsScored;
 }
