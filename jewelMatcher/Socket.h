@@ -34,7 +34,7 @@ class Socket
 		void Socket::discardJewel();
 
 		// If the socket contains a jewel, the Rect param will be jewel's new target location, returning false if no jewel found
-		bool Socket::setJewelDestination( SDL_Rect newDestination );
+		bool Socket::setCurrentJewelDestination( SDL_Rect newDestination );
 
 		// Moves jewel towards destination, returning true upon reaching it
 		bool Socket::moveJewelToDestination();

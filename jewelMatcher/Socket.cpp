@@ -92,7 +92,7 @@ void Socket::discardJewel()
 	currentJewel = NULL;
 }
 
-bool Socket::setJewelDestination( SDL_Rect newDestination )
+bool Socket::setCurrentJewelDestination( SDL_Rect newDestination )
 {
 	if( getCurrentJewel() != NULL )
 	{

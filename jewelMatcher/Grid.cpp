@@ -442,7 +442,7 @@ bool Grid::socketsAreFull()
 				if( socket->setJewel( stolenJewel ) )
 				{
 					// Set jewel destination
-					socket->setJewelDestination( socket->getSocketBound() );
+					socket->setCurrentJewelDestination( socket->getSocketBound() );
 					socket->moveJewelToDestination();
 				}
 			}
