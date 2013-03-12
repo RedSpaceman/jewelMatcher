@@ -46,6 +46,9 @@ int CELL_H = 42;
 int GRID_CENTRE_X = 500;
 int GRID_CENTRE_Y = 275;
 
+// Game score counts points player has earned during current game
+int gameScore = 0;
+
 // Load images and convert them to the right BPP
 SDL_Surface *load_image( std::string filename )
 {
@@ -111,23 +114,31 @@ void drawGrid(Grid* gameGrid)
 
 		// Draw jewel
 		char jewelType = nextSocket->getCurrentJewelType();
-		SDL_Rect jewelBound = nextSocket->getCurrentJewel()->getJewelBound();
-		// Jewel centres required to accomodate jewel surface variety in size
-		int jewelX = jewelBound.x + (int)(jewelBound.w * 0.5);
-		int jewelY = jewelBound.y + (int)(jewelBound.h * 0.5);
-		// Use surface dims to centre the jewel images
-		switch (jewelType)
+		Jewel* currentJewel = nextSocket->getCurrentJewel();
+		// Can only draw jewel if one exists in socket
+		if( currentJewel != NULL )
 		{
-			case 'r': apply_surface( jewelX-(redJewel->w/2), jewelY-(redJewel->h/2), redJewel, screen);
-			break;
-			case 'g': apply_surface( jewelX-(greenJewel->w/2), jewelY-(greenJewel->h/2), greenJewel, screen);
-			break;
-			case 'y': apply_surface( jewelX-(yellowJewel->w/2), jewelY-(yellowJewel->h/2), yellowJewel, screen);
-			break;
-			case 'p': apply_surface( jewelX-(purpleJewel->w/2), jewelY-(purpleJewel->h/2), purpleJewel, screen);
-			break;
-			case 'b': apply_surface( jewelX-(blueJewel->w/2), jewelY-(blueJewel->h/2), blueJewel, screen);
-			break;
+			SDL_Rect jewelBound = currentJewel->getJewelBound();
+		
+			// Jewel centres required to accomodate jewel surface variety in size
+			int jewelX = jewelBound.x + (int)(jewelBound.w * 0.5);
+			int jewelY = jewelBound.y + (int)(jewelBound.h * 0.5);
+			// Use surface dims to centre the jewel images
+			switch (jewelType)
+			{
+				case 'r': apply_surface( jewelX-(redJewel->w/2), jewelY-(redJewel->h/2), redJewel, screen);
+				break;
+				case 'g': apply_surface( jewelX-(greenJewel->w/2), jewelY-(greenJewel->h/2), greenJewel, screen);
+				break;
+				case 'y': apply_surface( jewelX-(yellowJewel->w/2), jewelY-(yellowJewel->h/2), yellowJewel, screen);
+				break;
+				case 'p': apply_surface( jewelX-(purpleJewel->w/2), jewelY-(purpleJewel->h/2), purpleJewel, screen);
+				break;
+				case 'b': apply_surface( jewelX-(blueJewel->w/2), jewelY-(blueJewel->h/2), blueJewel, screen);
+				break;
+				default:
+				break;
+			}
 		}
 	}
 }
@@ -155,6 +166,9 @@ bool init()
 
 	// Set window caption
 	SDL_WM_SetCaption( "Jewel Matcher", NULL );
+
+	// Seed random function with time to hide determinism
+	srand(time(NULL));
 
 	return true;
 }
