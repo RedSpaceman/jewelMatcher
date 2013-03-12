@@ -118,11 +118,11 @@ void drawGrid(Grid* gameGrid)
 		}
 
 		// Draw jewel
-		char jewelType = nextSocket->getCurrentJewelType();
 		Jewel* currentJewel = nextSocket->getCurrentJewel();
 		// Can only draw jewel if one exists in socket
 		if( currentJewel != NULL )
 		{
+			char jewelType = nextSocket->getCurrentJewelType();
 			SDL_Rect jewelBound = currentJewel->getJewelBound();
 		
 			// Jewel centres required to accomodate jewel surface variety in size
@@ -359,7 +359,8 @@ int main( int argc, char* args[] )
 											gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
 
 											// Check whether jewel switch has created color groups by attempting to detect and score them							
-											if( gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore ) > 0 )
+											int totalGroupsScored = gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore );
+											if( totalGroupsScored > 0 )
 											{
 												printf("yes!");									 
 											}
