@@ -11,7 +11,8 @@ class Socket
 	public:
 		Socket::Socket( SDL_Rect );
 
-		void Socket::setJewel(Jewel* newJewel);
+		// If newJewel is valid, stores and returns true
+		bool Socket::setJewel(Jewel* newJewel);
 
 		SDL_Rect getSocketBound();
 		int Socket::getWidth();
