@@ -34,7 +34,7 @@ char Jewel::getJewelType(){
 };
 
 char Jewel::getRandomJewelType(){
-	float r = (float)rand() / (float)RAND_MAX;
+	float r = (float)( rand() / (float)(RAND_MAX));
 	char chosenJewelType = 'p';
 
 	if ( r < 0.2 )
