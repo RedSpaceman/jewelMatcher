@@ -92,11 +92,11 @@ void apply_surface( int x, int y, SDL_Surface* source, SDL_Surface* destination 
 }
 
 // Loop over sockets, drawing their images and the jewels they contain
-void drawGrid(Grid* gameGrid)
+void drawGrid( Grid* const &gameGrid )
 {
-	//std::cout<<"sockets size: "<< gameGrid->sockets.size() << std::endl;
+	std::vector<Socket*>::iterator socketsBegin = gameGrid->getSocketsBeginning();
 	std::vector<Socket*>::iterator socketsEnd = gameGrid->getSocketsEnd();
-	for( std::vector<Socket*>::iterator it = gameGrid->getSocketsBeginning(); it != socketsEnd; it++)
+	for( std::vector<Socket*>::iterator it = socketsBegin; it != socketsEnd; it++ )
 	{
 		// Set socket surface alphas
 		int alpha = (int)( (SDL_ALPHA_OPAQUE - SDL_ALPHA_TRANSPARENT) * 0.5 );
@@ -308,7 +308,7 @@ int main( int argc, char* args[] )
 	}
 
 	SDL_Surface* titleMessage =	TTF_RenderText_Solid( font, "Jewel Matcher", textColor );
-	SDL_Surface* pausedMessage = TTF_RenderText_Solid( font, "Paused", textColor );
+	SDL_Surface* pausedMessage = TTF_RenderText_Solid( font, "Paused - Press 'p' to Continue", textColor );
 
 	//Apply image to screen
 	apply_surface( 0, 0, backgroundImage, screen );
