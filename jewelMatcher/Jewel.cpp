@@ -33,7 +33,7 @@ SDL_Rect Jewel::getDestination()
 void Jewel::setNewDestination(SDL_Rect newDest)
 {
 	destination = newDest;
-	if( ( destination.x == jewelBound.x ) && ( destination.y = jewelBound.y ) )
+	if( ( destination.x == jewelBound.x ) && ( destination.y == jewelBound.y ) )
 	{
 		// Already at destination
 		progress = 1.0;
