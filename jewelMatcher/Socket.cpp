@@ -76,15 +76,16 @@ Jewel* Socket::relinquishJewel()
 {
 	if( currentJewel != NULL )
 	{
-		// This socket has a jewel which it now must relinquish
-		Jewel* jewel = currentJewel;
-		currentJewel = NULL;
-		return jewel;
+		// Cannot give up a jewel which has not arrived
+		if( !currentJewel->inTransit() )
+		{
+			// This socket has a jewel which it now must relinquish
+			Jewel* jewel = currentJewel;
+			currentJewel = NULL;
+			return jewel;
+		}
 	}
-	else
-	{
-		return NULL;
-	}	
+	return NULL;
 }
 
 void Socket::discardJewel()
@@ -94,9 +95,10 @@ void Socket::discardJewel()
 
 bool Socket::setCurrentJewelDestination( SDL_Rect newDestination )
 {
-	if( getCurrentJewel() != NULL )
+	Jewel* jewel = getCurrentJewel();
+	if( jewel != NULL )
 	{
-		getCurrentJewel()->setNewDestination( newDestination );
+		jewel->setNewDestination( newDestination );
 		return true;
 	}
 	return false;
