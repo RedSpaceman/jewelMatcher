@@ -40,22 +40,22 @@ void Grid::populateSockets()
 	{
 		// Instruct each socket to generate a new jewel
 		int totalSockets = gridWidth*gridWidth;
-		for( int i = 0; i < totalSockets; i++)
+		for( int i = 0; i < totalSockets; i++ )
 		{
+			Socket* socket = sockets.at( i );
 			// Use socket boundary as jewel boundary
-			SDL_Rect jewelBound = calcSocketBoundFromIndex(i);
-			sockets.at(i)->generateJewel( jewelBound );
+			socket->generateJewel( socket->getSocketBound() );
 		}
 
-		std::vector<ColorGroup*> colorGroups = findColorGroups();
 		// Check board for pre-existing color groups
-		if( colorGroups.size() > 0 )
+		std::vector<ColorGroup*> colorGroups = findColorGroups();
+		if( !colorGroups.empty() )
 		{
-			// Delete board and try again
+			// Delete board and try again, counting number of successive boards for diagnostic purposes
 			boardGenNumber++;
 			
 			// Scramble color group sockets
-			//attemptColorGroupScramble(colorGroups);
+			attemptColorGroupScramble(colorGroups);
 			// Verify if color group scrambling removed all color groups
 			colorGroups = findColorGroups();
 			if( colorGroups.size() == 0 )
@@ -208,23 +208,21 @@ bool Grid::attemptJewelExchange( Socket* firstSocket, Socket* secondSocket )
 	{
 		// Switch jewel pointers between sockets
 		Jewel* firstJewel = firstSocket->getCurrentJewel();
-		firstSocket->setJewel(secondSocket->getCurrentJewel());
-		secondSocket->setJewel(firstJewel);
+		Jewel* secondJewel = secondSocket->getCurrentJewel();
+
+		firstSocket->setJewel( secondJewel );
+		secondSocket->setJewel( firstJewel );
 		if( firstSocket->getCurrentJewel() != NULL && secondSocket->getCurrentJewel() != NULL)
 		{
 			// Jewel ownership switched successfully
 			// Update jewel locations by setting new destinations
-			firstSocket->getCurrentJewel()->setNewDestination(firstSocket->getSocketBound());
-			secondSocket->getCurrentJewel()->setNewDestination(secondSocket->getSocketBound());
+			firstSocket->setCurrentJewelDestination( firstSocket->getSocketBound() );
+			secondSocket->setCurrentJewelDestination( secondSocket->getSocketBound() );
+			
 			return true;
 		}
-		else
-		{
-			// An error has occured during pointer exchange
-			return false;
-		}
 	}
-	// Sockets were not adjacent, exchange failed
+	// Sockets were not adjacent, or exchange failed
 	return false;
 }
 
