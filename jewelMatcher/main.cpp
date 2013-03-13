@@ -264,7 +264,7 @@ void clean_up()
     SDL_Quit();
 }
 
-void performSocketSelection( int x, int y, Grid* &gameGrid )
+bool performSocketSelection( int x, int y, Grid* &gameGrid )
 {
 	// Collect pointer to socket being upclicked
 	Socket* upClickedSocket = gameGrid->getSocketAtCoordinates( x, y );
@@ -291,17 +291,15 @@ void performSocketSelection( int x, int y, Grid* &gameGrid )
 				// Check whether jewel switch has created color groups by attempting to detect and score them							
 				int totalGroupsScored = gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore );
 				if( totalGroupsScored > 0 )
-				{
-					printf("yes!");									 
+				{	
+					selectedSockets.clear();
 				}
 				else
 				{
-					// No matching sets created; move was invalid so switch back
-					printf("no!");
-					gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+					// Illegal move requires a switch back
+					return true;
 				}
 			}
-			selectedSockets.clear();
 		}
 		else if( currentSelectionSize > 2 )
 		{
@@ -310,6 +308,7 @@ void performSocketSelection( int x, int y, Grid* &gameGrid )
 			selectedSockets.clear();
 		}
 	}
+	return false;
 }
 
 int main( int argc, char* args[] )
@@ -349,10 +348,21 @@ int main( int argc, char* args[] )
 	bool upClickOccurred = false;
 	int mUpClickX = 0;
 	int mUpClickY = 0;
+	// If an illegal move is made (no color groups formed), flag indicates they must be switched back
+	bool switchBack = false;
 
+	int currentTime =  time(NULL);
+	// Track time from previous iteration, for calculating delta-time
+	int prevTime =  time(NULL);
+	int deltaTime = 0;
+	
 	//Pause
 	while( quit == false )
 	{
+		// Determine how much time has elapsed since last iteration
+		currentTime = time(NULL);
+		deltaTime =  currentTime - prevTime;
+
 		// Event handling
 		while( SDL_PollEvent( &event ) )
 		{
@@ -394,9 +404,6 @@ int main( int argc, char* args[] )
 		
 		} // End of poll event clearing
 
-
-
-
 		// Pause inhibits user input and animation
 		if( isPaused )
 		{
@@ -407,17 +414,15 @@ int main( int argc, char* args[] )
 			upClickOccurred = false;
 		}
 		else
-		{
-			
+		{			
 			message = titleMessage;
 
 			// Reset flag before checking conditions
 			gridReady = false;
 			// Check if sockets are full
-			gridReady = gameGrid->socketsAreFull();
+			gridReady = gameGrid->socketsAreFull( deltaTime );
 			// Check if jewels are moving
-			gridReady = gameGrid->jewelsAreStatic();
-
+			gridReady = gameGrid->jewelsAreStatic( deltaTime );
 
 			// Only allow user mouse interaction if game is not handling grid animation etc
 			if( !gridReady )
@@ -428,20 +433,35 @@ int main( int argc, char* args[] )
 			}
 			else
 			{
-				// If an upClick occurred, check if it was within grid
-				if( upClickOccurred )
-				{ 
-					if( gameGrid->withinBound( mUpClickX, mUpClickY ) ) 
-					{
-						// Reset the flag for the next upclick
-						upClickOccurred = false;
-						// Execute behaviour for selecting sockets at coordinates and handling resulting behaviour
-						performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
-					}
-					else
-					{							
-						// Clicking outside of the grid is used for deselection
-						selectedSockets.clear();
+				// Animations have been resolved, grid is ready for input
+
+				//
+				if( switchBack )
+				{
+					// Invalid move by those currently in selection must be reversed
+					gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+					// Indicate switchback has been completed
+					switchBack = false;
+					// Deselect sockets involved in switch back
+					selectedSockets.clear();
+				}
+				else
+				{
+					// If an upClick occurred, check if it was within grid
+					if( upClickOccurred )
+					{ 
+						if( gameGrid->withinBound( mUpClickX, mUpClickY ) ) 
+						{
+							// Reset the flag for the next upclick
+							upClickOccurred = false;
+							// Execute behaviour for selecting sockets at coordinates and handling resulting behaviour
+							switchBack = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
+						}
+						else
+						{							
+							// Clicking outside of the grid is used for deselection
+							selectedSockets.clear();
+						}
 					}
 				}
 			} // End of gridReady/!gridReady statement
