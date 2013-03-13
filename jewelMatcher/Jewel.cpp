@@ -9,7 +9,7 @@ Jewel::Jewel(SDL_Rect newJewelBound)
 	destination = jewelBound;
 
 	progress = 1.0;
-	travelSpeed = 0.000001;
+	travelSpeed = 0.00005;
 
 	jewelType = getRandomJewelType();
 }
@@ -20,7 +20,7 @@ Jewel::Jewel(SDL_Rect newJewelBound, char newJewelType)
 	destination = jewelBound;
 	
 	progress = 1.0;
-	travelSpeed = 0.000001;
+	travelSpeed = 0.00005;
 
 	jewelType = newJewelType;
 }

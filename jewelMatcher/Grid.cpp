@@ -218,7 +218,7 @@ bool Grid::attemptJewelExchange( Socket* firstSocket, Socket* secondSocket )
 			// Update jewel locations by setting new destinations
 			firstSocket->setCurrentJewelDestination( firstSocket->getSocketBound() );
 			secondSocket->setCurrentJewelDestination( secondSocket->getSocketBound() );
-			
+
 			return true;
 		}
 	}

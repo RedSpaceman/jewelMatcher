@@ -264,6 +264,7 @@ void clean_up()
     SDL_Quit();
 }
 
+// Checks number of sockets selected and prompts behaviour accordingly, switching jewels if two sockets are selected
 bool performSocketSelection( int x, int y, Grid* &gameGrid )
 {
 	// Collect pointer to socket being upclicked
@@ -297,7 +298,7 @@ bool performSocketSelection( int x, int y, Grid* &gameGrid )
 				else
 				{
 					// Illegal move requires a switch back
-					return true;
+					return false;
 				}
 			}
 		}
@@ -308,7 +309,7 @@ bool performSocketSelection( int x, int y, Grid* &gameGrid )
 			selectedSockets.clear();
 		}
 	}
-	return false;
+	return true;
 }
 
 int main( int argc, char* args[] )
@@ -349,19 +350,39 @@ int main( int argc, char* args[] )
 	int mUpClickX = 0;
 	int mUpClickY = 0;
 	// If an illegal move is made (no color groups formed), flag indicates they must be switched back
-	bool switchBack = false;
+	bool legalMove = true;
 
-	int currentTime =  time(NULL);
+	// Illegal moves incur a momentary pause before jewels are switched back
+	// A counter will accumulate animationTime until 
+	int switchBackTimerTarget = 11000;
+	int switchBackTimerCounter = 0;
+
+	int currentTime =  0;
 	// Track time from previous iteration, for calculating delta-time
-	int prevTime =  time(NULL);
+	int prevTime = SDL_GetTicks();
+	// Change in time since last tick
 	int deltaTime = 0;
-	
+	// Increase counter 'accumulatedTime' until it reaches threshold of fixedTimeStep, prompting movements/animations to be performed
+	int accumulatedTime = 0;
+	// Used to instill regularity in animation
+	int fixedTimeStep = 1000;
+	// Controls whether functions are fed 0 or fixedTimeStep as their deltaTime
+	int animationTime = 0;
+
 	//Pause
 	while( quit == false )
 	{
 		// Determine how much time has elapsed since last iteration
-		currentTime = time(NULL);
+		currentTime = SDL_GetTicks();
 		deltaTime =  currentTime - prevTime;
+		accumulatedTime += deltaTime;
+		animationTime = 0;
+		if( accumulatedTime >= fixedTimeStep )
+		{
+			animationTime = fixedTimeStep;
+			// Accumulation variable can keep remainder after fixedTimeStep is taken away from it, as long as remainder is less than fixedTimeStep
+			accumulatedTime = accumulatedTime % fixedTimeStep;
+		}
 
 		// Event handling
 		while( SDL_PollEvent( &event ) )
@@ -420,9 +441,9 @@ int main( int argc, char* args[] )
 			// Reset flag before checking conditions
 			gridReady = false;
 			// Check if sockets are full
-			gridReady = gameGrid->socketsAreFull( deltaTime );
+			gridReady = gameGrid->socketsAreFull( animationTime );
 			// Check if jewels are moving
-			gridReady = gameGrid->jewelsAreStatic( deltaTime );
+			gridReady = gameGrid->jewelsAreStatic( animationTime );
 
 			// Only allow user mouse interaction if game is not handling grid animation etc
 			if( !gridReady )
@@ -435,15 +456,26 @@ int main( int argc, char* args[] )
 			{
 				// Animations have been resolved, grid is ready for input
 
-				//
-				if( switchBack )
+				// Illegal moves require jewels to be switched back before the game can continue
+				if( !legalMove )
 				{
-					// Invalid move by those currently in selection must be reversed
-					gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-					// Indicate switchback has been completed
-					switchBack = false;
-					// Deselect sockets involved in switch back
-					selectedSockets.clear();
+					switchBackTimerCounter += animationTime;
+					if( switchBackTimerCounter >= switchBackTimerTarget )
+					{	
+						// Reset switchback delay variable
+						switchBackTimerCounter = 0;
+
+						// Invalid move by those currently in selection must be reversed
+						gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+						// Indicate switchback has been completed
+						legalMove = true;
+						// Deselect sockets involved in switch back
+						selectedSockets.clear();
+					}
+					else
+					{
+						printf("!");
+					}
 				}
 				else
 				{
@@ -455,7 +487,7 @@ int main( int argc, char* args[] )
 							// Reset the flag for the next upclick
 							upClickOccurred = false;
 							// Execute behaviour for selecting sockets at coordinates and handling resulting behaviour
-							switchBack = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
+							legalMove = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
 						}
 						else
 						{							
