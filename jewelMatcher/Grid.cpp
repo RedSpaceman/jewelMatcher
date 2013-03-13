@@ -420,7 +420,7 @@ int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScor
 	return colorGroupsScored;
 }
 
-bool Grid::socketsAreFull()
+bool Grid::socketsAreFull( int deltaTime )
 {
 	bool socketsAreFull = true;
 	// Iterate BACKWARDS over all sockets, checking if they have jewels
@@ -443,7 +443,6 @@ bool Grid::socketsAreFull()
 				{
 					// Set jewel destination
 					socket->setCurrentJewelDestination( socket->getSocketBound() );
-					socket->moveJewelToDestination();
 				}
 			}
 		}
@@ -462,14 +461,13 @@ bool Grid::socketsAreFull()
 			socket->generateOffsetJewel( 0, -cellHeight );
 			// Set the jewel's destination as socket so it will fall
 			socket->getCurrentJewel()->setNewDestination( socket->getSocketBound() );
-			socket->moveJewelToDestination();
 		}
 	}
 
 	return true;
 }
 
-bool Grid::jewelsAreStatic()
+bool Grid::jewelsAreStatic( int deltaTime )
 {
 	bool jewelsAreStatic = true;
 	// Iterate through sockets, checking if jewelBound locations match the jewel destination
@@ -482,8 +480,9 @@ bool Grid::jewelsAreStatic()
 			if( currentJewel->inTransit() )
 			{
 				jewelsAreStatic = false;
+				socket->moveJewelToDestination( deltaTime );
 			}
 		}
 	}
-	return true;
+	return jewelsAreStatic;
 }

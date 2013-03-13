@@ -7,6 +7,10 @@ Jewel::Jewel(SDL_Rect newJewelBound)
 {
 	jewelBound = newJewelBound;
 	destination = jewelBound;
+
+	progress = 1.0;
+	travelSpeed = 0.000001;
+
 	jewelType = getRandomJewelType();
 }
 
@@ -14,12 +18,35 @@ Jewel::Jewel(SDL_Rect newJewelBound, char newJewelType)
 {
 	jewelBound = newJewelBound;
 	destination = jewelBound;
+	
+	progress = 1.0;
+	travelSpeed = 0.000001;
+
 	jewelType = newJewelType;
+}
+
+SDL_Rect Jewel::getDestination()
+{
+	return destination;
 }
 
 void Jewel::setNewDestination(SDL_Rect newDest)
 {
 	destination = newDest;
+	if( ( destination.x == jewelBound.x ) && ( destination.y = jewelBound.y ) )
+	{
+		// Already at destination
+		progress = 1.0;
+	}
+	else
+	{
+		progress = 0.0;
+	}
+}
+
+float Jewel::getProgress()
+{
+	return progress;
 }
 
 SDL_Rect Jewel::getJewelBound()
@@ -59,18 +86,25 @@ char Jewel::getRandomJewelType(){
 	return chosenJewelType;
 }
 
-bool Jewel::moveToDestination()
+bool Jewel::moveToDestination( int deltaTime )
 {
-	// TODO: Make movement non-instant
-	jewelBound = destination;
-	return true;
+	// moveToDestination is the only way to increase progress
+	float thisProgress = travelSpeed * deltaTime;
+	progress += thisProgress;
+	float totalProgress = progress;
+	// progress must be clamped to max of 1
+	if( progress >= 1.0 )
+	{
+		progress = 1.0;
+		jewelBound = destination;
+		return true;
+	}
+	return false;
 }
 
 bool Jewel::inTransit()
 {
-	// Only care about coordinates, rather than w & h as well
-	if( jewelBound.x == destination.x 
-		&& jewelBound.y == destination.y )
+	if( progress == 1.0 )
 	{
 		// jewel is not moving
 		return false;

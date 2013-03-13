@@ -70,10 +70,10 @@ class Grid{
 		int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore);
 
 		// True if sockets all have jewels, collapse board and return false if not
-		bool Grid::socketsAreFull();
+		bool Grid::socketsAreFull( int deltaTime );
 
 		// True if no jewels are in transit
-		bool Grid::jewelsAreStatic();
+		bool Grid::jewelsAreStatic( int deltaTime );
 
 };
 

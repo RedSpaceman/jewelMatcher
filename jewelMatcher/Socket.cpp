@@ -102,7 +102,7 @@ bool Socket::setCurrentJewelDestination( SDL_Rect newDestination )
 	return false;
 }
 
-bool Socket::moveJewelToDestination()
+bool Socket::moveJewelToDestination( int deltaTime )
 {
-	return getCurrentJewel()->moveToDestination();
+	return getCurrentJewel()->moveToDestination( deltaTime );
 }

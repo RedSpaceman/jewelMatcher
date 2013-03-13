@@ -124,10 +124,34 @@ void drawGrid( Grid* const &gameGrid )
 		{
 			char jewelType = nextSocket->getCurrentJewelType();
 			SDL_Rect jewelBound = currentJewel->getJewelBound();
+			SDL_Rect jewelDest = currentJewel->getDestination();
 		
+			int jewelDrawBoundX = jewelBound.x;
+			int jewelDrawBoundY = jewelBound.y;
+
+			// Interpolate between jewel's location and destination for a distance of its progress to find draw location
+			if( currentJewel->inTransit() )
+			{
+				int sourceX = jewelBound.x;
+				int sourceY = jewelBound.y;
+				int destX = jewelDest.x;
+				int destY = jewelDest.y;
+				float progress = currentJewel->getProgress();
+				int deltaX = destX - sourceX;
+				int deltaY = destY - sourceY;
+				int xOffset = (int)(deltaX * progress);
+				int yOffset = (int)(deltaY * progress);
+				int visualX = sourceX + xOffset;
+				int visualY = sourceY + yOffset;
+
+				jewelDrawBoundX = jewelBound.x + (int)( ( jewelDest.x - jewelBound.x ) * currentJewel->getProgress() );
+				jewelDrawBoundY = jewelBound.y + (int)( ( jewelDest.y - jewelBound.y ) * currentJewel->getProgress() );
+			}
+
 			// Jewel centres required to accomodate jewel surface variety in size
-			int jewelX = jewelBound.x + (int)(jewelBound.w * 0.5);
-			int jewelY = jewelBound.y + (int)(jewelBound.h * 0.5);
+			int jewelX = jewelDrawBoundX + (int)(jewelBound.w * 0.5);
+			int jewelY = jewelDrawBoundY + (int)(jewelBound.h * 0.5);
+
 			// Use surface dims to centre the jewel images
 			switch (jewelType)
 			{

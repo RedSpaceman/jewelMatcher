@@ -37,7 +37,7 @@ class Socket
 		bool Socket::setCurrentJewelDestination( SDL_Rect newDestination );
 
 		// Moves jewel towards destination, returning true upon reaching it
-		bool Socket::moveJewelToDestination();
+		bool Socket::moveJewelToDestination( int deltaTime );
 };
 
 #endif
