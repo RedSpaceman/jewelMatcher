@@ -235,7 +235,7 @@ bool load_files()
 	if ( socketSelected == NULL ) return false;
 
 	// Open font
-	font = TTF_OpenFont( "lazy.ttf", 28 );
+	font = TTF_OpenFont( "#44v2.ttf", 28 );
 	if ( font == NULL )
 	{
 		return false;
