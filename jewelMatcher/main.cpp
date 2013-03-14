@@ -200,8 +200,7 @@ bool init()
 	SDL_WM_SetCaption( "Jewel Matcher", NULL );
 
 	// Seed random function with time to hide determinism
-	//srand((int)time(NULL));
-	srand(545);
+	srand((int)time(NULL));
 
 	return true;
 }
