@@ -39,6 +39,9 @@ int SCREEN_WIDTH = 755;
 int SCREEN_HEIGHT = 600; 
 int SCREEN_BPP = 32;
 
+// Length of time for a game
+int totalGameLength = 60000;
+
 // Number of jewels on one side of the grid
 int GRID_SIZE = 8;
 int CELL_W = 42;
@@ -333,6 +336,9 @@ int main( int argc, char* args[] )
 
 	SDL_Surface* titleMessage =	TTF_RenderText_Solid( font, "Jewel Matcher", textColor );
 	SDL_Surface* pausedMessage = TTF_RenderText_Solid( font, "Paused - Press 'p' to Continue", textColor );
+	SDL_Surface* gameOverMessage = TTF_RenderText_Solid( font, "Game Over", textColor );
+	SDL_Surface* timerMessage = TTF_RenderText_Solid( font, "Time left: ", textColor );
+	SDL_Surface* scoreMessage = TTF_RenderText_Solid( font, "Score:", textColor );
 
 	//Apply image to screen
 	apply_surface( 0, 0, backgroundImage, screen );
@@ -343,6 +349,9 @@ int main( int argc, char* args[] )
 
 	// Pausing prevents game behaviours, stops timer, stops interaction other than unpausing, but continues draw calls
 	bool isPaused = false;
+	// Flag indicating whether game has finished
+	bool gameOver = false;
+
 	// If the game is animating someting, interaction is prevented
 	bool gridReady = true;
 	// Track whether (and where) an upClick has occurred
@@ -357,9 +366,12 @@ int main( int argc, char* args[] )
 	int switchBackTimerTarget = 11000;
 	int switchBackTimerCounter = 0;
 
-	int currentTime =  0;
+	// Game start time
+	int gameStartTime = SDL_GetTicks();
+	int totalTimeElapsed = 0;
+	int currentTime = gameStartTime;
 	// Track time from previous iteration, for calculating delta-time
-	int prevTime = SDL_GetTicks();
+	int prevTime = gameStartTime;
 	// Change in time since last tick
 	int deltaTime = 0;
 	// Increase counter 'accumulatedTime' until it reaches threshold of fixedTimeStep, prompting movements/animations to be performed
@@ -372,16 +384,21 @@ int main( int argc, char* args[] )
 	//Pause
 	while( quit == false )
 	{
-		// Determine how much time has elapsed since last iteration
-		currentTime = SDL_GetTicks();
-		deltaTime =  currentTime - prevTime;
-		accumulatedTime += deltaTime;
-		animationTime = 0;
-		if( accumulatedTime >= fixedTimeStep )
+		if( !gameOver )
 		{
-			animationTime = fixedTimeStep;
-			// Accumulation variable can keep remainder after fixedTimeStep is taken away from it, as long as remainder is less than fixedTimeStep
-			accumulatedTime = accumulatedTime % fixedTimeStep;
+			// Determine how much time has elapsed since last iteration
+			currentTime = SDL_GetTicks();
+			// Time elapsed is 
+			totalTimeElapsed = currentTime - gameStartTime;
+			deltaTime =  currentTime - prevTime;
+			accumulatedTime += deltaTime;
+			animationTime = 0;
+			if( accumulatedTime >= fixedTimeStep )
+			{
+				animationTime = fixedTimeStep;
+				// Accumulation variable can keep remainder after fixedTimeStep is taken away from it, as long as remainder is less than fixedTimeStep
+				accumulatedTime = accumulatedTime % fixedTimeStep;
+			}
 		}
 
 		// Event handling
@@ -425,84 +442,108 @@ int main( int argc, char* args[] )
 		
 		} // End of poll event clearing
 
-		// Pause inhibits user input and animation
-		if( isPaused )
+		// Check if the game timer has run out yet
+		if( totalTimeElapsed < totalGameLength )
 		{
-			// Set message so user understands what state game is in and why interaction is halted.
-			message = pausedMessage;
-
-			// Up-Clicks occuring during paused game state are rejected
-			upClickOccurred = false;
-		}
-		else
-		{			
-			message = titleMessage;
-
-			// Reset flag before checking conditions
-			gridReady = false;
-			// Check if sockets are full
-			gridReady = gameGrid->socketsAreFull( animationTime );
-			// Check if jewels are moving
-			gridReady = gameGrid->jewelsAreStatic( animationTime );
-
-			// Only allow user mouse interaction if game is not handling grid animation etc
-			if( !gridReady )
+			// Pause inhibits user input and animation
+			if( isPaused )
 			{
-				// If grid is not ready...
-				// - prompt empty sockets to steal/generate jewels
-				// - prompt jewels to move towards their destinations
+				// Set message so user understands what state game is in and why interaction is halted.
+				message = pausedMessage;
+
+				// Up-Clicks occuring during paused game state are rejected
+				upClickOccurred = false;
 			}
 			else
-			{
-				// Animations have been resolved, grid is ready for input
+			{			
+				message = titleMessage;
 
-				// Illegal moves require jewels to be switched back before the game can continue
-				if( !legalMove )
+				// Reset flag before checking conditions
+				gridReady = false;
+				// Check if sockets are full
+				gridReady = gameGrid->socketsAreFull( animationTime );
+				// Check if jewels are moving
+				gridReady = gameGrid->jewelsAreStatic( animationTime );
+
+				// Only allow user mouse interaction if game is not handling grid animation etc
+				if( !gridReady )
 				{
-					switchBackTimerCounter += animationTime;
-					if( switchBackTimerCounter >= switchBackTimerTarget )
-					{	
-						// Reset switchback delay variable
-						switchBackTimerCounter = 0;
-
-						// Invalid move by those currently in selection must be reversed
-						gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-						// Indicate switchback has been completed
-						legalMove = true;
-						// Deselect sockets involved in switch back
-						selectedSockets.clear();
-					}
-					else
-					{
-						printf("!");
-					}
+					// If grid is not ready...
+					// - prompt empty sockets to steal/generate jewels
+					// - prompt jewels to move towards their destinations
 				}
 				else
 				{
-					// If an upClick occurred, check if it was within grid
-					if( upClickOccurred )
-					{ 
-						if( gameGrid->withinBound( mUpClickX, mUpClickY ) ) 
-						{
-							// Reset the flag for the next upclick
-							upClickOccurred = false;
-							// Execute behaviour for selecting sockets at coordinates and handling resulting behaviour
-							legalMove = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
-						}
-						else
-						{							
-							// Clicking outside of the grid is used for deselection
+					// Animations have been resolved, grid is ready for input
+
+					// Illegal moves require jewels to be switched back before the game can continue
+					if( !legalMove )
+					{
+						switchBackTimerCounter += animationTime;
+						if( switchBackTimerCounter >= switchBackTimerTarget )
+						{	
+							// Reset switchback delay variable
+							switchBackTimerCounter = 0;
+
+							// Invalid move by those currently in selection must be reversed
+							gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+							// Indicate switchback has been completed
+							legalMove = true;
+							// Deselect sockets involved in switch back
 							selectedSockets.clear();
 						}
 					}
-				}
-			} // End of gridReady/!gridReady statement
-		} // End of pause/!pause statement
-
+					else
+					{
+						// If an upClick occurred, check if it was within grid
+						if( upClickOccurred )
+						{ 
+							if( gameGrid->withinBound( mUpClickX, mUpClickY ) ) 
+							{
+								// Reset the flag for the next upclick
+								upClickOccurred = false;
+								// Execute behaviour for selecting sockets at coordinates and handling resulting behaviour
+								legalMove = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
+							}
+							else
+							{							
+								// Clicking outside of the grid is used for deselection
+								selectedSockets.clear();
+							}
+						}
+					}
+				} // End of gridReady/!gridReady statement
+			} // End of pause/!pause statement
+		} 
+		else
+		{		 
+			gameOver = true;
+		}
 
 		// Draw back game visuals
 		apply_surface( 0, 0, backgroundImage, screen );
 		drawGrid( gameGrid );
+
+		// Display timer
+		std::stringstream time; 
+		time << "Time Left:" << (int)( (totalGameLength - totalTimeElapsed) / 1000.0f ) << "seconds";
+		timerMessage = TTF_RenderText_Solid( font, time.str().c_str(), textColor );
+		apply_surface( 15, 575, timerMessage, screen);
+
+		// Display "Score:"		
+		scoreMessage = TTF_RenderText_Solid( font, "Score:", textColor );
+		apply_surface( 455, 465, scoreMessage, screen);
+		// Display score value
+		std::stringstream currentScore;
+		currentScore << gameScore;
+		scoreMessage = TTF_RenderText_Solid( font, currentScore.str().c_str(), textColor );
+		apply_surface( 445, 545, scoreMessage, screen);
+
+		if( gameOver )
+		{
+			// Draw score
+			message = gameOverMessage;
+		}
 
 		// Refresh message
 		if ( message != NULL )
@@ -517,7 +558,7 @@ int main( int argc, char* args[] )
 		}
 	}
 
-	// Free-ip surfaces and quit SDL
+	// Free-up surfaces and quit SDL
 	clean_up();
     
     return 0;    
