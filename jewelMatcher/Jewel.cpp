@@ -3,26 +3,22 @@
 Jewel::Jewel(){
 }
 
-Jewel::Jewel(SDL_Rect newJewelBound)
+Jewel::Jewel(SDL_Rect newJewelBound): 
+	jewelBound( newJewelBound ), 
+	destination( newJewelBound ),
+	progress( 1.0 ),
+	travelSpeed( 0.00005 ),
+	jewelType( getRandomJewelType() )
 {
-	jewelBound = newJewelBound;
-	destination = jewelBound;
-
-	progress = 1.0;
-	travelSpeed = 0.00005;
-
-	jewelType = getRandomJewelType();
 }
 
-Jewel::Jewel(SDL_Rect newJewelBound, char newJewelType)
+Jewel::Jewel(SDL_Rect newJewelBound, char newJewelType):
+	jewelBound( newJewelBound ), 
+	destination( newJewelBound ),
+	progress( 1.0 ),
+	travelSpeed( 0.00005 ),
+	jewelType( newJewelType )
 {
-	jewelBound = newJewelBound;
-	destination = jewelBound;
-	
-	progress = 1.0;
-	travelSpeed = 0.00005;
-
-	jewelType = newJewelType;
 }
 
 SDL_Rect Jewel::getDestination()

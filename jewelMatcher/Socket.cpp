@@ -3,9 +3,9 @@
 
 #include <iostream>
 
-Socket::Socket(SDL_Rect newSocketBound)
+Socket::Socket(SDL_Rect newSocketBound): 
+	socketBound(newSocketBound)
 {
-	socketBound = newSocketBound;
 }
 
 bool Socket::setJewel(Jewel* newJewel)
