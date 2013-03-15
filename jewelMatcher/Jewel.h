@@ -18,23 +18,32 @@ class Jewel {
 		char getRandomJewelType();
 	public:	
 		
+		/* Constructors */
 		Jewel();
 		Jewel(SDL_Rect newJewelBound);
 		Jewel(SDL_Rect newJewelBound, char newJewelType);
 
+		/* Getter Functions */
 		SDL_Rect getDestination();
+		// Returns proportion of distance jewel has travelled between current boundary and destination
+		float getProgress();
+		// Returns jewel's boundary
+		SDL_Rect getJewelBound();
+		// Returns jewel's color
+		char getJewelType();	
+
+		/* Setter Functions */
 		void setNewDestination(SDL_Rect newDest);
 
-		float getProgress();
+		// If the jewel's bound and destination do not match, the jewel must be moving
+		bool inTransit();
 
-		SDL_Rect getJewelBound();
-		char getJewelType();	
+
 
 		// Moves jewel from bound location towards destination, returning true if destination is reached
 		bool moveToDestination( int deltaTime );
 
-		// If the jewel's bound and destination do not match, the jewel must be moving
-		bool inTransit();
+
 };
 
 #endif

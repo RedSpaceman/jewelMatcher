@@ -30,6 +30,11 @@ SDL_Rect Jewel::getDestination()
 	return destination;
 }
 
+float Jewel::getProgress()
+{
+	return progress;
+}
+
 void Jewel::setNewDestination(SDL_Rect newDest)
 {
 	destination = newDest;
@@ -42,11 +47,6 @@ void Jewel::setNewDestination(SDL_Rect newDest)
 	{
 		progress = 0.0;
 	}
-}
-
-float Jewel::getProgress()
-{
-	return progress;
 }
 
 SDL_Rect Jewel::getJewelBound()
