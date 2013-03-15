@@ -11,7 +11,6 @@
 #include <sstream>
 
 #include "Jewel.h"
-#include "Button.h"
 #include "Grid.h"
 
 SDL_Surface* backgroundImage = NULL;
