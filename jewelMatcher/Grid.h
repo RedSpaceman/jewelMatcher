@@ -21,59 +21,59 @@ class Grid{
 		std::vector<Socket*> sockets;
 
 	public:
-		Grid::Grid(int newGridWidth, int newCentreX, int newCentreY, int newCellWidth, int newCellHeight);
-		Grid::~Grid();
+		Grid(int newGridWidth, int newCentreX, int newCentreY, int newCellWidth, int newCellHeight);
+		~Grid();
 
 		// Create sockets
-		void Grid::generateSockets();
+		void generateSockets();
 		// Fill all sockets with jewels
-		void Grid::populateSockets();
+		void populateSockets();
 		// Randomises jewels in sockets that belong to existing color groups
-		void Grid::attemptColorGroupScramble(std::vector<ColorGroup*> &colorGroups);
+		void attemptColorGroupScramble(std::vector<ColorGroup*> &colorGroups);
 
 		int getGridWidth();
 
 		Socket* getSocketAtRowColumn( int row, int column );
 
 		// Making the coordinate relative to the grid, and dividing by a cell dimension, provides column (or row) number
-		int Grid::getColumnForSocketIndex(int socketIndex);
-		int Grid::getRowForSocketIndex(int socketIndex);
+		int getColumnForSocketIndex(int socketIndex);
+		int getRowForSocketIndex(int socketIndex);
 		
 		int convertRowColumnToSocketIndex(int row, int column);
 		
-		int Grid::getColumnFromXCoord(int x);
-		int Grid::getRowFromYCoord(int y);
+		int getColumnFromXCoord(int x);
+		int getRowFromYCoord(int y);
 
-		SDL_Rect Grid::calcSocketBoundFromIndex(int socketIndex);
+		SDL_Rect calcSocketBoundFromIndex(int socketIndex);
 
-		std::vector<Socket*>::iterator Grid::getSocketsBeginning();
-		std::vector<Socket*>::iterator Grid::getSocketsEnd();
+		std::vector<Socket*>::iterator getSocketsBeginning();
+		std::vector<Socket*>::iterator getSocketsEnd();
 
 		bool Grid::withinBound(int x, int y);
 
 		// Given screen coordinates checked for grid-validity, then used to return a pointer to socket at that location
-		Socket* Grid::getSocketAtCoordinates(int x, int y);
+		Socket* getSocketAtCoordinates(int x, int y);
 
 		// Validity of exchange checked, then jewels instructed to swap places
-		bool Grid::attemptJewelExchange( Socket* firstSocket, Socket* secondSocket );
+		bool attemptJewelExchange( Socket* firstSocket, Socket* secondSocket );
 
 		// Return true if socket locations are a legal switch
-		bool Grid::checkSocketAdjacency( Socket* firstSocket, Socket* secondSocket );
+		bool checkSocketAdjacency( Socket* firstSocket, Socket* secondSocket );
 
 		// Returns true if all jewels complete their moves, false if some are still in transit
-		bool Grid::moveJewelsToDestinations();
+		bool moveJewelsToDestinations();
 
 		// Searches the grid for locations where jewels of the same colour form lines of greater than three
-		std::vector<ColorGroup*> Grid::findColorGroups();
+		std::vector<ColorGroup*> findColorGroups();
 
 		// Receives detected color groups, removes the jewels from their sockets and scores them, returning number of groups scored
-		int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore);
+		int scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore);
 
 		// True if sockets all have jewels, collapse board and return false if not
-		bool Grid::socketsAreFull( int deltaTime );
+		bool socketsAreFull( int deltaTime );
 
 		// True if no jewels are in transit
-		bool Grid::jewelsAreStatic( int deltaTime );
+		bool jewelsAreStatic( int deltaTime );
 
 };
 

@@ -12,17 +12,17 @@ class ColorGroup
 		SDL_Rect groupBound;
 		char groupColor;
 	public:
-		ColorGroup::ColorGroup();
-		ColorGroup::ColorGroup(std::vector<Socket*> includedSockets);
+		ColorGroup();
+		ColorGroup(std::vector<Socket*> includedSockets);
+		
+		int getGroupSize();
+		char getGroupColor();
 
 		// Recalculates bounding Rect using group's current socket members
-		void ColorGroup::updateGroupBound();
+		void updateGroupBound();
 
-		int ColorGroup::getGroupSize();
-		char ColorGroup::getGroupColor();
-
-		std::vector<Socket*>::iterator ColorGroup::getGroupSocketsBeginning();
-		std::vector<Socket*>::iterator ColorGroup::getGroupSocketsEnd();
+		std::vector<Socket*>::iterator getGroupSocketsBeginning();
+		std::vector<Socket*>::iterator getGroupSocketsEnd();
 };
 
 #endif
