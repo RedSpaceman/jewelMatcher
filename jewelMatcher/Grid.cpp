@@ -1,10 +1,10 @@
 #include "Grid.h"
 
-Grid::Grid(int newGridWidth, int newCentreX, int newCentreY, int newCellWidth, int newCellHeight){
-	gridWidth = newGridWidth;
-	cellWidth = newCellWidth;
-	cellHeight = newCellHeight;
-
+Grid::Grid(int newGridWidth, int newCentreX, int newCentreY, int newCellWidth, int newCellHeight):
+	gridWidth( newGridWidth ),
+	cellWidth( newCellWidth ),
+	cellHeight( newCellHeight )
+{
 	// If gridWidth is odd, gridWidth%2 allows additional half-width shift to centre central socket
 	gridBound.x = (int)(newCentreX-(cellWidth*(gridWidth*0.5))) - (int)((gridWidth%2) * (cellWidth*0.5));
 	gridBound.y = (int)(newCentreY-(cellHeight*(gridWidth*0.5))) - (int)((gridWidth%2) * (cellHeight*0.5));
