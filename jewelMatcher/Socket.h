@@ -10,6 +10,7 @@ class Socket
 		Jewel* currentJewel;
 	public:
 		Socket( SDL_Rect );
+		~Socket();
 
 		// If newJewel is valid, stores and returns true
 		bool setJewel(Jewel* newJewel);
@@ -28,6 +29,7 @@ class Socket
 		// Allows jewel to be spawned in initial location relative to socket coordinates
 		void generateOffsetJewel( int x, int y );
 
+		// When called by another socket, this socket must hand-over its jewel
 		Jewel* relinquishJewel();
 
 		// Set currentJewel to NULL, discarding the socket's contents

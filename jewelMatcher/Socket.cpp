@@ -3,8 +3,9 @@
 
 #include <iostream>
 
-Socket::Socket(SDL_Rect newSocketBound): 
-	socketBound(newSocketBound)
+Socket::Socket( SDL_Rect newSocketBound ): 
+	socketBound( newSocketBound ),
+	currentJewel( NULL )
 {
 }
 
@@ -16,6 +17,12 @@ bool Socket::setJewel(Jewel* newJewel)
 		return true;
 	}
 	return false;
+}
+
+Socket::~Socket()
+{
+	// Member pointer currentJewel must be cleaned-up
+	delete currentJewel;
 }
 
 SDL_Rect Socket::getSocketBound()
@@ -59,6 +66,9 @@ bool Socket::containsJewel()
 
 void Socket::generateJewel( SDL_Rect newJewelBound )
 {	
+	// Ensure any exist jewel pointer is destroyed
+	delete currentJewel;
+	// Generate new jewel for socket to contain
 	currentJewel = new Jewel( newJewelBound );
 }
 
@@ -71,7 +81,6 @@ void Socket::generateOffsetJewel( int x, int y )
 	generateJewel( newJewelBound );
 }
 
-// When called by another socket, this socket must hand-over its jewel
 Jewel* Socket::relinquishJewel()
 {
 	if( currentJewel != NULL )
@@ -90,6 +99,8 @@ Jewel* Socket::relinquishJewel()
 
 void Socket::discardJewel()
 {
+	// Discarded jewel's object must be destroyed
+	delete currentJewel;
 	currentJewel = NULL;
 }
 
