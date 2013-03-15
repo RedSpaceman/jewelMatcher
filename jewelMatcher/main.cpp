@@ -243,8 +243,10 @@ bool load_files()
 	return true;
 }
 
-void clean_up()
+void clean_up( Grid* &gameGrid )
 {
+	delete gameGrid;
+
 	// Free loaded images
 	SDL_FreeSurface( backgroundImage );
 	SDL_FreeSurface( redJewel );
@@ -258,6 +260,11 @@ void clean_up()
 
 	// Clean up font
 	SDL_FreeSurface( message );
+	SDL_FreeSurface( titleMessage );
+	SDL_FreeSurface( pausedMessage );
+	SDL_FreeSurface( gameOverMessage );
+	SDL_FreeSurface( timerMessage );
+	SDL_FreeSurface( scoreMessage );
 	TTF_CloseFont( font );
 	TTF_Quit();
 
@@ -571,8 +578,8 @@ int main( int argc, char* args[] )
 		}
 	}
 
-	// Free-up surfaces and quit SDL
-	clean_up();
+	// Free-up surfaces, destroy objects and quit SDL
+	clean_up( gameGrid );
     
     return 0;    
 }
