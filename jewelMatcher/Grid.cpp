@@ -18,7 +18,11 @@ Grid::Grid(int newGridWidth, int newCentreX, int newCentreY, int newCellWidth, i
 
 Grid::~Grid()
 {
-	// TODO: Must delete sockets
+	// Must delete socket pointers
+	for( std::vector<Socket*>::iterator itr = sockets.begin(); itr != sockets.end(); itr++)
+	{
+		delete *itr;
+	}
 }
 
 void Grid::generateSockets()
