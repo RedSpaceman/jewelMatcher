@@ -9,7 +9,6 @@
 class ColorGroup
 {
 		std::vector<Socket*> socketsInGroup;
-		SDL_Rect groupBound;
 		char groupColor;
 	public:
 		ColorGroup();
@@ -17,9 +16,6 @@ class ColorGroup
 		
 		int getGroupSize();
 		char getGroupColor();
-
-		// Recalculates bounding Rect using group's current socket members
-		void updateGroupBound();
 
 		std::vector<Socket*>::iterator getGroupSocketsBeginning();
 		std::vector<Socket*>::iterator getGroupSocketsEnd();

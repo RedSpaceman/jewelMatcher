@@ -1,37 +1,14 @@
 #include "ColorGroup.h"
 
-ColorGroup::ColorGroup(){
-	groupColor = 'z';
-	updateGroupBound();
+ColorGroup::ColorGroup(): 
+	groupColor('z')
+{
 }
 
-ColorGroup::ColorGroup(std::vector<Socket*> includedSockets)
+ColorGroup::ColorGroup(std::vector<Socket*> includedSockets):
+	socketsInGroup( includedSockets ),							// Store group's sockets
+	groupColor( socketsInGroup.at(0)->getCurrentJewelType() )	// Set group color
 {
-	// Store group's sockets
-	socketsInGroup = includedSockets;
-	// Set group color
-	groupColor = socketsInGroup.at(0)->getCurrentJewelType();
-}
-
-void ColorGroup::updateGroupBound()
-{
-	if( socketsInGroup.size() > 0 )
-	{
-		// Calculate group bound, used for merging L-Shape color groups into a single group
-		SDL_Rect firstSocketBound = socketsInGroup.front()->getSocketBound();
-		SDL_Rect lastSocketBound =  socketsInGroup.back()->getSocketBound();
-		groupBound.x = firstSocketBound.x;
-		groupBound.y = firstSocketBound.y;
-		groupBound.w = lastSocketBound.x + lastSocketBound.w - groupBound.x;
-		groupBound.h = lastSocketBound.y + lastSocketBound.h - groupBound.y;
-	}
-	else
-	{
-		groupBound.x = 0;
-		groupBound.y = 0;
-		groupBound.w = 0;
-		groupBound.h = 0;
-	}
 }
 
 int ColorGroup::getGroupSize()
