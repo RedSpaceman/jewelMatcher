@@ -13,23 +13,36 @@
 #include "Jewel.h"
 #include "Grid.h"
 
-SDL_Surface* backgroundImage = NULL;
-SDL_Surface* screen = NULL;
+/* Screen Dimensions */
+int SCREEN_WIDTH = 755;
+int SCREEN_HEIGHT = 600; 
+int SCREEN_BPP = 32;
 
+/* Visuals */
+SDL_Surface* screen = NULL;
+SDL_Surface* backgroundImage = NULL;
+// Jewel Image Surfaces
 SDL_Surface* redJewel = NULL;
 SDL_Surface* blueJewel = NULL;
 SDL_Surface* yellowJewel = NULL;
 SDL_Surface* greenJewel = NULL;
 SDL_Surface* purpleJewel = NULL;
-
+// Grid Outline Image Surfaces
 SDL_Surface* socketDefault = NULL;
 SDL_Surface* socketHover = NULL;
 SDL_Surface* socketSelected = NULL;
 
+/* Event Handling */
 SDL_Event event;
-std::vector<Socket*> selectedSockets;
 
-// Font
+/* Mouse Information */
+// Currently selected sockets
+std::vector<Socket*> selectedSockets;
+// Track mouse coordinates
+int mouseX = 0;
+int mouseY = 0;
+
+/* Font and Message Surfaces */
 TTF_Font *font = NULL;
 SDL_Color textColor = { 10, 10, 10 };
 SDL_Surface* message = NULL;
@@ -39,27 +52,47 @@ SDL_Surface* gameOverMessage = TTF_RenderText_Solid( font, "Game Over", textColo
 SDL_Surface* timerMessage = TTF_RenderText_Solid( font, "Time left: ", textColor );
 SDL_Surface* scoreMessage = TTF_RenderText_Solid( font, "Score:", textColor );
 
-int SCREEN_WIDTH = 755;
-int SCREEN_HEIGHT = 600; 
-int SCREEN_BPP = 32;
-
-// Length of time for a game
-int totalGameLength = 60000;
-
+/* Game Configuration */
+// Game time length
+int totalGameLength = 60000; // 60 seconds = 60000
 // Number of jewels on one side of the grid
 int GRID_SIZE = 8;
 int CELL_W = 42;
 int CELL_H = 42;
-// Centre of jewel grid coordinates, manually determined
+// Centre of jewel grid coordinates (manually determined)
 int GRID_CENTRE_X = 500;
 int GRID_CENTRE_Y = 275;
 
-// Track mouse coordinates
-int mouseX = 0;
-int mouseY = 0;
 
-// Game score counts points player has earned during current game
-int gameScore = 0;
+bool init() 
+{
+	//Start SDL
+    if ( SDL_Init( SDL_INIT_EVERYTHING ) == -1 )
+	{
+		return false;
+	}
+
+	// Set up screen
+	screen = SDL_SetVideoMode( SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_SWSURFACE );
+	if ( screen == NULL)
+	{
+		return false;
+	}
+
+	// Initialise truetype font
+	if ( TTF_Init() == -1 )
+	{
+		return false;
+	}
+
+	// Set window caption
+	SDL_WM_SetCaption( "Jewel Matcher", NULL );
+
+	// Seed random function with time to hide determinism
+	srand((int)time(NULL));
+
+	return true;
+}
 
 // Load images and convert them to the right BPP
 SDL_Surface *load_image( std::string filename )
@@ -96,6 +129,74 @@ void apply_surface( int x, int y, SDL_Surface* source, SDL_Surface* destination 
 	offset.y = y;
 
 	SDL_BlitSurface( source, NULL, destination, &offset );
+}
+
+void clean_up( Grid* &gameGrid )
+{
+	delete gameGrid;
+
+	// Free loaded images
+	SDL_FreeSurface( backgroundImage );
+	SDL_FreeSurface( redJewel );
+	SDL_FreeSurface( greenJewel );
+	SDL_FreeSurface( purpleJewel );
+	SDL_FreeSurface( blueJewel );
+	SDL_FreeSurface( yellowJewel );
+	SDL_FreeSurface( socketDefault );
+	SDL_FreeSurface( socketHover );
+	SDL_FreeSurface( socketSelected );
+
+	// Clean up font
+	SDL_FreeSurface( message );
+	SDL_FreeSurface( titleMessage );
+	SDL_FreeSurface( pausedMessage );
+	SDL_FreeSurface( gameOverMessage );
+	SDL_FreeSurface( timerMessage );
+	SDL_FreeSurface( scoreMessage );
+	TTF_CloseFont( font );
+	TTF_Quit();
+
+    //Quit SDL
+    SDL_Quit();
+}
+
+bool load_files()
+{
+	//Load background image
+	backgroundImage = load_image( "../images/BackGround.jpg" );
+	if ( backgroundImage == NULL ) return false;
+	//load red
+	redJewel = load_image( "../images/Red.png" );
+	if ( redJewel == NULL ) return false;
+	//load blue
+	blueJewel = load_image( "../images/Blue.png" );
+	if ( blueJewel == NULL ) return false;
+	//load green
+	greenJewel = load_image( "../images/Green.png" );
+	if ( greenJewel == NULL ) return false;
+	//load yellow
+	yellowJewel = load_image( "../images/Yellow.png" );
+	if ( yellowJewel == NULL ) return false;
+	//load purple
+	purpleJewel = load_image( "../images/Purple.png" );
+	if ( purpleJewel == NULL ) return false;	
+
+	//load socket images
+	socketDefault = load_image( "../images/socketDefault.png" );
+	if ( socketDefault == NULL ) return false;
+	socketHover = load_image( "../images/socketHover.png" );
+	if ( socketHover == NULL ) return false;
+	socketSelected = load_image( "../images/socketSelected.png" );
+	if ( socketSelected == NULL ) return false;
+
+	// Open font
+	font = TTF_OpenFont( "#44v2.ttf", 28 );
+	if ( font == NULL )
+	{
+		return false;
+	}
+
+	return true;
 }
 
 // Loop over sockets, drawing their images and the jewels they contain
@@ -200,7 +301,7 @@ void drawGrid( Grid* const &gameGrid )
 	}
 }
 
-void drawHUD( int const totalTimeElapsed )
+void drawHUD( int const totalTimeElapsed, int &gameScore )
 {
 	// Display timer
 	std::stringstream time; 
@@ -231,106 +332,8 @@ void drawHUD( int const totalTimeElapsed )
 	apply_surface( offsetScoreX, 540, scoreMessage, screen);
 }
 
-bool init() 
-{
-	//Start SDL
-    if ( SDL_Init( SDL_INIT_EVERYTHING ) == -1 )
-	{
-		return false;
-	}
-
-	// Set up screen
-	screen = SDL_SetVideoMode( SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_SWSURFACE );
-	if ( screen == NULL)
-	{
-		return false;
-	}
-
-	// Initialise truetype font
-	if ( TTF_Init() == -1 )
-	{
-		return false;
-	}
-
-	// Set window caption
-	SDL_WM_SetCaption( "Jewel Matcher", NULL );
-
-	// Seed random function with time to hide determinism
-	srand((int)time(NULL));
-
-	return true;
-}
-
-bool load_files()
-{
-	//Load background image
-	backgroundImage = load_image( "../images/BackGround.jpg" );
-	if ( backgroundImage == NULL ) return false;
-	//load red
-	redJewel = load_image( "../images/Red.png" );
-	if ( redJewel == NULL ) return false;
-	//load blue
-	blueJewel = load_image( "../images/Blue.png" );
-	if ( blueJewel == NULL ) return false;
-	//load green
-	greenJewel = load_image( "../images/Green.png" );
-	if ( greenJewel == NULL ) return false;
-	//load yellow
-	yellowJewel = load_image( "../images/Yellow.png" );
-	if ( yellowJewel == NULL ) return false;
-	//load purple
-	purpleJewel = load_image( "../images/Purple.png" );
-	if ( purpleJewel == NULL ) return false;	
-
-	//load socket images
-	socketDefault = load_image( "../images/socketDefault.png" );
-	if ( socketDefault == NULL ) return false;
-	socketHover = load_image( "../images/socketHover.png" );
-	if ( socketHover == NULL ) return false;
-	socketSelected = load_image( "../images/socketSelected.png" );
-	if ( socketSelected == NULL ) return false;
-
-	// Open font
-	font = TTF_OpenFont( "#44v2.ttf", 28 );
-	if ( font == NULL )
-	{
-		return false;
-	}
-
-	return true;
-}
-
-void clean_up( Grid* &gameGrid )
-{
-	delete gameGrid;
-
-	// Free loaded images
-	SDL_FreeSurface( backgroundImage );
-	SDL_FreeSurface( redJewel );
-	SDL_FreeSurface( greenJewel );
-	SDL_FreeSurface( purpleJewel );
-	SDL_FreeSurface( blueJewel );
-	SDL_FreeSurface( yellowJewel );
-	SDL_FreeSurface( socketDefault );
-	SDL_FreeSurface( socketHover );
-	SDL_FreeSurface( socketSelected );
-
-	// Clean up font
-	SDL_FreeSurface( message );
-	SDL_FreeSurface( titleMessage );
-	SDL_FreeSurface( pausedMessage );
-	SDL_FreeSurface( gameOverMessage );
-	SDL_FreeSurface( timerMessage );
-	SDL_FreeSurface( scoreMessage );
-	TTF_CloseFont( font );
-	TTF_Quit();
-
-    //Quit SDL
-    SDL_Quit();
-}
-
 // Initiates a search of the Grid for color groups, 
-bool searchForScoringGroups( Grid* &gameGrid )
+bool searchForScoringGroups( Grid* &gameGrid, int &gameScore )
 {
 	// Check whether jewel switch has created color groups by attempting to detect and score them							
 	int totalGroupsScored = gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore );
@@ -419,6 +422,8 @@ int main( int argc, char* args[] )
 	bool isPaused = false;
 	// Flag indicating whether game has finished
 	bool gameOver = false;
+	// Game score counts points player has earned during current game
+	int gameScore = 0;
 
 	// If the game is animating someting, interaction is prevented
 	bool gridReady = true;
@@ -458,23 +463,6 @@ int main( int argc, char* args[] )
 	//Pause
 	while( quit == false )
 	{
-		if( !gameOver )
-		{
-			// Determine how much time has elapsed since last iteration
-			currentTime = SDL_GetTicks();
-			// Time elapsed is 
-			totalTimeElapsed = currentTime - gameStartTime;
-			deltaTime =  currentTime - prevTime;
-			accumulatedTime += deltaTime;
-			animationTime = 0;
-			if( accumulatedTime >= fixedTimeStep )
-			{
-				animationTime = fixedTimeStep;
-				// Accumulation variable can keep remainder after fixedTimeStep is taken away from it, as long as remainder is less than fixedTimeStep
-				accumulatedTime = accumulatedTime % fixedTimeStep;
-			}
-		}
-
 		// Event handling
 		while( SDL_PollEvent( &event ) )
 		{
@@ -516,136 +504,153 @@ int main( int argc, char* args[] )
 		
 		} // End of poll event clearing
 
-		
-			// Pause inhibits user input and animation
-			if( isPaused && !gameOver )
+		// Update timer information
+		if( !gameOver && !isPaused )
+		{
+			// Determine how much time has elapsed since last iteration
+			currentTime = SDL_GetTicks();
+			// Time elapsed is 
+			totalTimeElapsed = currentTime - gameStartTime;
+			deltaTime =  currentTime - prevTime;
+			accumulatedTime += deltaTime;
+			animationTime = 0;
+			if( accumulatedTime >= fixedTimeStep )
 			{
-				// Set message so user understands what state game is in and why interaction is halted.
-				message = pausedMessage;
-
-				// Up-Clicks occuring during paused game state are rejected
-				upClickOccurred = false;
+				animationTime = fixedTimeStep;
+				// Accumulation variable can keep remainder after fixedTimeStep is taken away from it, as long as remainder is less than fixedTimeStep
+				accumulatedTime = accumulatedTime % fixedTimeStep;
 			}
-			else
-			{			
-				message = titleMessage;
+		}
 
-				// Reset flag before checking conditions
-				gridReady = false;
-				// Check if sockets are full
-				gridReady = gameGrid->socketsAreFull( animationTime );
-				// Check if jewels are moving
-				gridReady = gameGrid->jewelsAreStatic( animationTime );
+		// Pause inhibits user input and animation
+		if( isPaused && !gameOver )
+		{
+			// Set message so user understands what state game is in and why interaction is halted.
+			message = pausedMessage;
+
+			// Up-Clicks occuring during paused game state are rejected
+			upClickOccurred = false;
+		}
+		else
+		{			
+			message = titleMessage;
+
+			// Reset flag before checking conditions
+			gridReady = false;
+			// Check if sockets are full
+			gridReady = gameGrid->socketsAreFull( animationTime );
+			// Check if jewels are moving
+			gridReady = gameGrid->jewelsAreStatic( animationTime );
 
 				
-				if( !gridReady )
-				{	
-					// Grid has undergone change from sockets being filled or jewels moving
-					gridChanged = true;
-				}
-				else
+			if( !gridReady )
+			{	
+				// Grid has undergone change from sockets being filled or jewels moving
+				gridChanged = true;
+			}
+			else
+			{
+				// To protect against repeated searched of an un-changed grid, check if the last search set 
+				if( gridChanged )
 				{
-					// To protect against repeated searched of an un-changed grid, check if the last search set 
-					if( gridChanged )
+					// Reset the flag to show that 
+					gridChanged = false;
+					if( searchForScoringGroups( gameGrid, gameScore ) )
 					{
-						// Reset the flag to show that 
-						gridChanged = false;
-						if( searchForScoringGroups( gameGrid ) )
-						{
-							// Groups were found and scored. Sockets will no longer be full.
-							gridReady = false;
-							if( moveMade )
-							{	
-								// Reset the flag
-								moveMade = false;
-								// Player switched jewels, but no resulting groups have been found
-								legalMove = true;
-							}
+						// Groups were found and scored. Sockets will no longer be full.
+						gridReady = false;
+						if( moveMade )
+						{	
+							// Reset the flag
+							moveMade = false;
+							// Player switched jewels, but no resulting groups have been found
+							legalMove = true;
 						}
-						else
-						{
-							if( moveMade )
-							{	
-								// Reset the flag
-								moveMade = false;
-								// Player switched jewels, but no resulting groups have been found
-								legalMove = false;
-							}
-						}
-					}
-				}
-
-
-				// Check if the game timer has run out yet
-				if( totalTimeElapsed < totalGameLength )
-				{
-					// Only allow user mouse interaction if game is not handling grid animation etc
-					if( !gridReady )
-					{
-						// If grid is not ready...
-						// - prompt empty sockets to steal/generate jewels
-						// - prompt jewels to move towards their destinations
 					}
 					else
 					{
-						// Animations have been resolved, grid is ready for input
+						if( moveMade )
+						{	
+							// Reset the flag
+							moveMade = false;
+							// Player switched jewels, but no resulting groups have been found
+							legalMove = false;
+						}
+					}
+				}
+			}
 
-						// Illegal moves require jewels to be switched back before the game can continue
-						if( !legalMove )
-						{
-							switchBackTimeCounter += animationTime;
-							if( switchBackTimeCounter >= switchBackTimeTarget )
-							{	
-								// Reset switchback delay variable
-								switchBackTimeCounter = 0;
 
-								// Jewel exchange reversal can only occur if two sockets are selected
-								if( selectedSockets.size() == 2 )
-								{
-									// Invalid move by those currently in selection must be reversed
-									gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-								}
+			// Check if the game timer has run out yet
+			if( totalTimeElapsed < totalGameLength )
+			{
+				// Only allow user mouse interaction if game is not handling grid animation etc
+				if( !gridReady )
+				{
+					// If grid is not ready...
+					// - prompt empty sockets to steal/generate jewels
+					// - prompt jewels to move towards their destinations
+				}
+				else
+				{
+					// Animations have been resolved, grid is ready for input
 
-								// Indicate switchback has been completed
-								legalMove = true;
-								// Deselect sockets involved in switch back
+					// Illegal moves require jewels to be switched back before the game can continue
+					if( !legalMove )
+					{
+						switchBackTimeCounter += animationTime;
+						if( switchBackTimeCounter >= switchBackTimeTarget )
+						{	
+							// Reset switchback delay variable
+							switchBackTimeCounter = 0;
+
+							// Jewel exchange reversal can only occur if two sockets are selected
+							if( selectedSockets.size() == 2 )
+							{
+								// Invalid move by those currently in selection must be reversed
+								gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+							}
+
+							// Indicate switchback has been completed
+							legalMove = true;
+							// Deselect sockets involved in switch back
+							selectedSockets.clear();
+						}
+					}
+					else
+					{
+						// If an upClick occurred, check if it was within grid
+						if( upClickOccurred )
+						{ 
+							if( gameGrid->withinBound( mUpClickX, mUpClickY ) ) 
+							{
+								// Reset the flag for the next upclick
+								upClickOccurred = false;
+								// Execute behaviour for selecting sockets at coordinates
+								moveMade = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
+							}
+							else
+							{							
+								// Clicking outside of the grid is used for deselection
 								selectedSockets.clear();
 							}
 						}
-						else
-						{
-							// If an upClick occurred, check if it was within grid
-							if( upClickOccurred )
-							{ 
-								if( gameGrid->withinBound( mUpClickX, mUpClickY ) ) 
-								{
-									// Reset the flag for the next upclick
-									upClickOccurred = false;
-									// Execute behaviour for selecting sockets at coordinates
-									moveMade = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
-								}
-								else
-								{							
-									// Clicking outside of the grid is used for deselection
-									selectedSockets.clear();
-								}
-							}
-						}
-					} // End of gridReady/!gridReady statement
-				} 
-				else
-				{	
-					// Full game length has elapsed 
-					gameOver = true;
-				}
-			} // End of pause/!pause statement
+					}
+				} // End of gridReady/!gridReady statement
+			} 
+			else
+			{	
+				// Full game length has elapsed 
+				gameOver = true;
+			}
+		} // End of pause/!pause statement
 		
 
 		// Draw back game visuals
 		apply_surface( 0, 0, backgroundImage, screen );
 		drawGrid( gameGrid );
 
-		drawHUD( totalTimeElapsed );
+		drawHUD( totalTimeElapsed, gameScore );
 
 		if( gameOver )
 		{
@@ -671,4 +676,3 @@ int main( int argc, char* args[] )
     
     return 0;    
 }
-
