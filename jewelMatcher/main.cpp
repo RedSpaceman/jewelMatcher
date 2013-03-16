@@ -216,6 +216,7 @@ void drawHUD( int const totalTimeElapsed )
 	std::stringstream currentScore;
 	currentScore << gameScore;
 	scoreMessage = TTF_RenderText_Solid( font, currentScore.str().c_str(), textColor );
+	
 	int scoreXCentred = 495;
 	// Actual x location must be offset for each numeral in the score
 	int numeralCounter = 1;
@@ -428,15 +429,11 @@ int main( int argc, char* args[] )
 	bool upClickOccurred = false;
 	int mUpClickX = 0;
 	int mUpClickY = 0;
-	// If an illegal move is made (no color groups formed), flag indicates they must be switched back
-	bool legalMove = true;
+
 	// Track whether the player has moved a jewel
 	bool moveMade = false;
-
-	// Illegal moves incur a momentary pause before jewels are switched back
-	// A counter will accumulate animationTime until 
-	int switchBackTimeTarget = 11000;
-	int switchBackTimeCounter = 0;
+	// If an illegal move is made (no color groups formed), flag indicates they must be switched back
+	bool legalMove = true;
 
 	// Game start time
 	int gameStartTime = SDL_GetTicks();
@@ -452,6 +449,11 @@ int main( int argc, char* args[] )
 	int fixedTimeStep = 1000;
 	// Controls whether functions are fed 0 or fixedTimeStep as their deltaTime
 	int animationTime = 0;
+
+	// Illegal moves incur a momentary pause before jewels are switched back
+	// A counter will accumulate animationTime until 
+	int switchBackTimeTarget = 11000;
+	int switchBackTimeCounter = 0;
 
 	//Pause
 	while( quit == false )
