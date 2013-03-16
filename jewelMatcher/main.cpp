@@ -272,7 +272,21 @@ void clean_up( Grid* &gameGrid )
     SDL_Quit();
 }
 
-// Checks number of sockets selected and prompts behaviour accordingly, switching jewels if two sockets are selected
+// Initiates a search of the Grid for color groups, 
+bool searchForScoringGroups( Grid* &gameGrid )
+{
+	// Check whether jewel switch has created color groups by attempting to detect and score them							
+	int totalGroupsScored = gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore );
+	if( totalGroupsScored > 0 )
+	{	
+		selectedSockets.clear();
+		// Indicate groups were found and scored
+		return true;
+	}
+	return false;
+}
+
+// Checks number of sockets selected and prompts behaviour accordingly, switching jewels if two sockets are selected, with return type indicating whether a switch occurred
 bool performSocketSelection( int x, int y, Grid* &gameGrid )
 {
 	// Collect pointer to socket being upclicked
@@ -284,30 +298,15 @@ bool performSocketSelection( int x, int y, Grid* &gameGrid )
 		int currentSelectionSize = (int)selectedSockets.size();
 							
 		// Vary behaviour, dependent on how many sockets are currently selected
-		if( currentSelectionSize == 1 )
-		{
-			// A socket is selected
-			printf("One socket selected");
-		}
-		else if( currentSelectionSize == 2 )
+		if( currentSelectionSize == 2 )
 		{
 			// Once two sockets are selected, attempt jewel exchange validation and execution
 			// If selection was same socket twice, deselection should be the only action
 			if( selectedSockets.at(0) != selectedSockets.at(1) )
 			{	
 				gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-
-				// Check whether jewel switch has created color groups by attempting to detect and score them							
-				int totalGroupsScored = gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore );
-				if( totalGroupsScored > 0 )
-				{	
-					selectedSockets.clear();
-				}
-				else
-				{
-					// Illegal move requires a switch back
-					return false;
-				}
+				// Indicate that selected jewels underwent a switch
+				return true;
 			}
 		}
 		else if( currentSelectionSize > 2 )
@@ -317,7 +316,7 @@ bool performSocketSelection( int x, int y, Grid* &gameGrid )
 			selectedSockets.clear();
 		}
 	}
-	return true;
+	return false;
 }
 
 int main( int argc, char* args[] )
@@ -359,17 +358,22 @@ int main( int argc, char* args[] )
 
 	// If the game is animating someting, interaction is prevented
 	bool gridReady = true;
+	// To prevent continuous searching for color groups when the grid has not changed, false flag indicates no need to search
+	bool gridChanged = false;
+
 	// Track whether (and where) an upClick has occurred
 	bool upClickOccurred = false;
 	int mUpClickX = 0;
 	int mUpClickY = 0;
 	// If an illegal move is made (no color groups formed), flag indicates they must be switched back
 	bool legalMove = true;
+	// Track whether the player has moved a jewel
+	bool moveMade = false;
 
 	// Illegal moves incur a momentary pause before jewels are switched back
 	// A counter will accumulate animationTime until 
-	int switchBackTimerTarget = 11000;
-	int switchBackTimerCounter = 0;
+	int switchBackTimeTarget = 11000;
+	int switchBackTimeCounter = 0;
 
 	// Game start time
 	int gameStartTime = SDL_GetTicks();
@@ -470,6 +474,44 @@ int main( int argc, char* args[] )
 				// Check if jewels are moving
 				gridReady = gameGrid->jewelsAreStatic( animationTime );
 
+				
+				if( !gridReady )
+				{	
+					// Grid has undergone change from sockets being filled or jewels moving
+					gridChanged = true;
+				}
+				else
+				{
+					// To protect against repeated searched of an un-changed grid, check if the last search set 
+					if( gridChanged )
+					{
+						// Reset the flag to show that 
+						gridChanged = false;
+						if( searchForScoringGroups( gameGrid ) )
+						{
+							// Groups were found and scored. Sockets will no longer be full.
+							gridReady = false;
+							if( moveMade )
+							{	
+								// Reset the flag
+								moveMade = false;
+								// Player switched jewels, but no resulting groups have been found
+								legalMove = true;
+							}
+						}
+						else
+						{
+							if( moveMade )
+							{	
+								// Reset the flag
+								moveMade = false;
+								// Player switched jewels, but no resulting groups have been found
+								legalMove = false;
+							}
+						}
+					}
+				}
+
 				// Only allow user mouse interaction if game is not handling grid animation etc
 				if( !gridReady )
 				{
@@ -484,14 +526,19 @@ int main( int argc, char* args[] )
 					// Illegal moves require jewels to be switched back before the game can continue
 					if( !legalMove )
 					{
-						switchBackTimerCounter += animationTime;
-						if( switchBackTimerCounter >= switchBackTimerTarget )
+						switchBackTimeCounter += animationTime;
+						if( switchBackTimeCounter >= switchBackTimeTarget )
 						{	
 							// Reset switchback delay variable
-							switchBackTimerCounter = 0;
+							switchBackTimeCounter = 0;
 
-							// Invalid move by those currently in selection must be reversed
-							gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+							// Jewel exchange reversal can only occur if two sockets are selected
+							if( selectedSockets.size() == 2 )
+							{
+								// Invalid move by those currently in selection must be reversed
+								gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+							}
+
 							// Indicate switchback has been completed
 							legalMove = true;
 							// Deselect sockets involved in switch back
@@ -507,8 +554,8 @@ int main( int argc, char* args[] )
 							{
 								// Reset the flag for the next upclick
 								upClickOccurred = false;
-								// Execute behaviour for selecting sockets at coordinates and handling resulting behaviour
-								legalMove = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
+								// Execute behaviour for selecting sockets at coordinates
+								moveMade = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
 							}
 							else
 							{							
