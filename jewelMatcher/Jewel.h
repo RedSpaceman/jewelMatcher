@@ -6,8 +6,9 @@
 #include "SDL.h"
 #include "SDL_image.h"
 
-class Jewel {
-
+class Jewel
+{
+	private:
 		SDL_Rect jewelBound;
 		SDL_Rect destination;
 		// Progress between 0 and 1 represents percentage of distance covered bound and destination, for interpolation
@@ -15,6 +16,7 @@ class Jewel {
 		// Amount of time taken to move a full '1' distance of progress
 		float travelSpeed;
 		char jewelType;
+		// Used for randomly designating a color to a jewel
 		char getRandomJewelType();
 	public:	
 		

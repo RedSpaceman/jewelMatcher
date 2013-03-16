@@ -8,6 +8,7 @@
 
 class ColorGroup
 {
+	private:
 		std::vector<Socket*> socketsInGroup;
 		char groupColor;
 	public:
