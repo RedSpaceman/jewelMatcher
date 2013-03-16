@@ -356,19 +356,32 @@ bool performSocketSelection( int x, int y, Grid* &gameGrid )
 		// Vary behaviour, dependent on how many sockets are currently selected
 		if( currentSelectionSize == 2 )
 		{
-			// Once two sockets are selected, attempt jewel exchange validation and execution
-			// If selection was same socket twice, deselection should be the only action
-			if( selectedSockets.at(0) != selectedSockets.at(1) )
-			{	
-				gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-				// Indicate that selected jewels underwent a switch
-				return true;
+			Socket* firstSocket = selectedSockets.at(0);
+			Socket* secondSocket = selectedSockets.at(1);
+
+			if( gameGrid->checkSocketAdjacency( firstSocket, secondSocket )
+				&& firstSocket != NULL
+				&& secondSocket != NULL )
+			{
+				// Once two adjacent sockets are selected, attempt jewel exchange validation and execution
+				// If selection was same socket twice, deselection should be the only action
+				if( firstSocket != secondSocket )
+				{	
+					gameGrid->attemptJewelExchange( firstSocket, secondSocket );
+
+					// Indicate that selected jewels underwent a switch
+					return true;
+				}
+			}
+			else
+			{
+				// Selection was not adjacent, or held NULL values
+				selectedSockets.clear();
 			}
 		}
 		else if( currentSelectionSize > 2 )
 		{
 			// Should not be able to select more than two, so error has occurred
-			std::cout << "Selection error has occured. " << selectedSockets.size() << " sockets were selected. Clearing selection." << std::endl;
 			selectedSockets.clear();
 		}
 	}
