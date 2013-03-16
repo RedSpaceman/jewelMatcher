@@ -42,15 +42,11 @@ std::vector<Socket*> selectedSockets;
 int mouseX = 0;
 int mouseY = 0;
 
-/* Font and Message Surfaces */
+/* Font, Message Surface and string */
 TTF_Font *font = NULL;
 SDL_Color textColor = { 10, 10, 10 };
 SDL_Surface* message = NULL;
-SDL_Surface* titleMessage =	TTF_RenderText_Solid( font, "Jewel Matcher", textColor );
-SDL_Surface* pausedMessage = TTF_RenderText_Solid( font, "Paused - Press 'p' to Continue", textColor );
-SDL_Surface* gameOverMessage = TTF_RenderText_Solid( font, "Game Over", textColor );
-SDL_Surface* timerMessage = TTF_RenderText_Solid( font, "Time left: ", textColor );
-SDL_Surface* scoreMessage = TTF_RenderText_Solid( font, "Score:", textColor );
+std::string messageString = ""; 
 
 /* Game Configuration */
 // Game time length
@@ -148,11 +144,6 @@ void clean_up( Grid* &gameGrid )
 
 	// Clean up font
 	SDL_FreeSurface( message );
-	SDL_FreeSurface( titleMessage );
-	SDL_FreeSurface( pausedMessage );
-	SDL_FreeSurface( gameOverMessage );
-	SDL_FreeSurface( timerMessage );
-	SDL_FreeSurface( scoreMessage );
 	TTF_CloseFont( font );
 	TTF_Quit();
 
@@ -301,8 +292,30 @@ void drawGrid( Grid* const &gameGrid )
 	}
 }
 
+void renderCentredText( int const centreX, int const centreY, std::string textString )
+{
+	int totalCharacters = textString.length();
+	int approxCharacterWidth = 7;
+	int charactersXOffset = (int)( totalCharacters / 2 );
+	int distanceXOffset = charactersXOffset * approxCharacterWidth;
+	if( totalCharacters % 2 )
+	{
+		// Odd number of characters, offset by half a character more
+		distanceXOffset -= (int)( 0.5 * approxCharacterWidth );
+	}
+
+	// Refresh message
+	message = TTF_RenderText_Solid( font, textString.c_str(), textColor );
+
+	apply_surface( centreX - distanceXOffset, centreY, message, screen);
+}
+
 void drawHUD( int const totalTimeElapsed, int &gameScore )
 {
+
+	SDL_Surface* timerMessage = TTF_RenderText_Solid( font, "Time left: ", textColor );
+	SDL_Surface* scoreMessage = TTF_RenderText_Solid( font, "Score:", textColor );
+
 	// Display timer
 	std::stringstream time; 
 	time << "Time Left: " << (int)( (totalGameLength - totalTimeElapsed) / 1000.0f ) << " seconds";
@@ -318,18 +331,8 @@ void drawHUD( int const totalTimeElapsed, int &gameScore )
 	currentScore << gameScore;
 	scoreMessage = TTF_RenderText_Solid( font, currentScore.str().c_str(), textColor );
 	
-	int scoreXCentred = 495;
-	// Actual x location must be offset for each numeral in the score
-	int numeralCounter = 1;
-	int tempScore = gameScore;
-	while( tempScore > 0 )
-	{
-		tempScore = (int)( tempScore / 10 );
-		numeralCounter++;
-	}
-	int characterWidth = 6;
-	int offsetScoreX = scoreXCentred - ( ( numeralCounter / 2 ) * characterWidth ) ;
-	apply_surface( offsetScoreX, 540, scoreMessage, screen);
+	renderCentredText( 495, 540, currentScore.str() );
+	
 }
 
 // Initiates a search of the Grid for color groups, 
@@ -405,7 +408,8 @@ int main( int argc, char* args[] )
 		return 1;
 	}
 
-	message = TTF_RenderText_Solid( font, "Jewel Matcher", textColor );
+	messageString = "Jewel Matcher";
+	message = TTF_RenderText_Solid( font, messageString.c_str(), textColor );
 	if ( message == NULL )
 	{
 		return 1;
@@ -526,14 +530,14 @@ int main( int argc, char* args[] )
 		if( isPaused && !gameOver )
 		{
 			// Set message so user understands what state game is in and why interaction is halted.
-			message = pausedMessage;
+			messageString = "Paused - 'p' to Continue";
 
 			// Up-Clicks occuring during paused game state are rejected
 			upClickOccurred = false;
 		}
 		else
-		{			
-			message = titleMessage;
+		{		
+			messageString = "Jewel Matcher";
 
 			// Reset flag before checking conditions
 			gridReady = false;
@@ -646,7 +650,7 @@ int main( int argc, char* args[] )
 		} // End of pause/!pause statement
 		
 
-		// Draw back game visuals
+		// Draw background and game visuals
 		apply_surface( 0, 0, backgroundImage, screen );
 		drawGrid( gameGrid );
 
@@ -655,14 +659,11 @@ int main( int argc, char* args[] )
 		if( gameOver )
 		{
 			// Draw score
-			message = gameOverMessage;
+			messageString = "Game Over";
 		}
 
-		// Refresh message
-		if ( message != NULL )
-		{			
-			apply_surface( 400, 55, message, screen);
-		}
+		// Refresh message	
+		renderCentredText( 410, 55, messageString );
 
 		//Update screen
 		if ( SDL_Flip( screen ) == -1 )
