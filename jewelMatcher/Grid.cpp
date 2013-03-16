@@ -154,9 +154,9 @@ std::vector<Socket*>::iterator Grid::getSocketsEnd()
 
 bool Grid::withinBound(int x, int y)
 {
-	if( ( x >= gridBound.x ) && x <= gridBound.x + gridBound.w )
+	if( ( x > gridBound.x ) && x < gridBound.x + gridBound.w )
 	{
-		if( ( y >= gridBound.y ) && ( y <= gridBound.y + gridBound.h ) )
+		if( ( y > gridBound.y ) && ( y < gridBound.y + gridBound.h ) )
 		{
 			return true;
 		}
