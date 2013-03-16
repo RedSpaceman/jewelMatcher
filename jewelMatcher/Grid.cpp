@@ -90,48 +90,12 @@ void Grid::attemptColorGroupScramble(std::vector<ColorGroup*> &colorGroups)
 	}
 }
 
-int Grid::getGridWidth(){
+int Grid::getGridWidth() const
+{
 	return gridWidth;
 }
 
-Socket* Grid::getSocketAtRowColumn( int row, int column )
-{
-	return sockets.at( convertRowColumnToSocketIndex( row, column ) );
-}
-
-int Grid::convertRowColumnToSocketIndex(int row, int column)
-{
-	// Socket index starts in top left of grid (0) and counts rightwards, starting at the left for each new row
-
-	// Convert x and y into a sockets index
-	// Testing logic (gW=5)
-	//  first column, first row(idx 0): 1,1 -> 0+0
-	//  fourth column, second row(idx 8): 4,2 -> 3+(1*5)=8
-	return (( column - 1 ) + (( row - 1 ) * gridWidth ));
-}
-
-int Grid::getColumnForSocketIndex(int socketIndex)
-{
-	return ( socketIndex % gridWidth ) + 1;
-}
-
-int Grid::getRowForSocketIndex(int socketIndex)
-{
-	return ((int)( socketIndex / gridWidth ) + 1 );
-}
-
-
-int Grid::getColumnFromXCoord(int x)
-{
-	return ( (x - gridBound.x) / cellWidth) + 1;
-}
-
-int Grid::getRowFromYCoord(int y)
-{
-	return ( (y - gridBound.y) / cellHeight ) + 1;
-}
-
-SDL_Rect Grid::calcSocketBoundFromIndex(int socketIndex)
+SDL_Rect Grid::calcSocketBoundFromIndex( const int socketIndex )
 {
 	SDL_Rect socketBound;
 	socketBound.x = gridBound.x + ( cellWidth * ( getColumnForSocketIndex(socketIndex) - 1 ) );
@@ -142,29 +106,43 @@ SDL_Rect Grid::calcSocketBoundFromIndex(int socketIndex)
 	return socketBound;
 }
 
-std::vector<Socket*>::iterator Grid::getSocketsBeginning()
+int Grid::getColumnForSocketIndex( const int socketIndex ) const
 {
-	return sockets.begin();
+	return ( socketIndex % gridWidth ) + 1;
 }
 
-std::vector<Socket*>::iterator Grid::getSocketsEnd()
+int Grid::getRowForSocketIndex( const int socketIndex ) const
 {
-	return sockets.end();
+	return ((int)( socketIndex / gridWidth ) + 1 );
 }
 
-bool Grid::withinBound(int x, int y)
+int Grid::getColumnFromXCoord( const int x ) const
 {
-	if( ( x > gridBound.x ) && x < gridBound.x + gridBound.w )
-	{
-		if( ( y > gridBound.y ) && ( y < gridBound.y + gridBound.h ) )
-		{
-			return true;
-		}
-	}
-	return false;
+	return ( (x - gridBound.x) / cellWidth) + 1;
 }
 
-Socket* Grid::getSocketAtCoordinates(int x, int y)
+int Grid::getRowFromYCoord( const int y ) const
+{
+	return ( (y - gridBound.y) / cellHeight ) + 1;
+}
+
+int Grid::convertRowColumnToSocketIndex( const int row, const int column ) const
+{
+	// Socket index starts in top left of grid (0) and counts rightwards, starting at the left for each new row
+
+	// Convert x and y into a sockets index
+	// Testing logic: (gW=5)
+	//  first column, first row(idx 0): 1,1 -> 0+0
+	//  fourth column, second row(idx 8): 4,2 -> 3+(1*5)=8
+	return (( column - 1 ) + (( row - 1 ) * gridWidth ));
+}
+
+Socket* Grid::getSocketAtRowColumn( const int row, const int column ) const
+{
+	return sockets.at( convertRowColumnToSocketIndex( row, column ) );
+}
+
+Socket* Grid::getSocketAtCoordinates( const int x, const int y )
 {
 	Socket* selectedSocket = NULL;
 	
@@ -177,7 +155,29 @@ Socket* Grid::getSocketAtCoordinates(int x, int y)
 	return selectedSocket;
 }
 
-bool Grid::checkSocketAdjacency( Socket* firstSocket, Socket* secondSocket )
+std::vector<Socket*>::iterator Grid::getSocketsBeginning()
+{
+	return sockets.begin();
+}
+
+std::vector<Socket*>::iterator Grid::getSocketsEnd()
+{
+	return sockets.end();
+}
+
+bool Grid::withinBound( const int x, const int y ) const
+{
+	if( ( x > gridBound.x ) && x < gridBound.x + gridBound.w )
+	{
+		if( ( y > gridBound.y ) && ( y < gridBound.y + gridBound.h ) )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Grid::checkSocketAdjacency( Socket const* firstSocket, Socket const* secondSocket )
 {
 	SDL_Rect firstLoc = firstSocket->getSocketBound();
 	SDL_Rect secondLoc = secondSocket->getSocketBound();
@@ -381,7 +381,7 @@ std::vector<ColorGroup*> Grid::findColorGroups()
 	return colorGroups;
 }
 
-int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore)
+int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScore )
 {
 	// If there were no valid groups detected (passed to this function), indicate failure
 	int totalValidGroups = validGroups.size();
@@ -424,7 +424,7 @@ int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScor
 	return colorGroupsScored;
 }
 
-bool Grid::socketsAreFull( int deltaTime )
+bool Grid::socketsAreFull( int const deltaTime )
 {
 	bool socketsAreFull = true;
 	// Iterate BACKWARDS over all sockets, checking if they have jewels
@@ -471,7 +471,7 @@ bool Grid::socketsAreFull( int deltaTime )
 	return true;
 }
 
-bool Grid::jewelsAreStatic( int deltaTime )
+bool Grid::jewelsAreStatic( int const deltaTime ) const
 {
 	bool jewelsAreStatic = true;
 	// Iterate through sockets, checking if jewelBound locations match the jewel destination

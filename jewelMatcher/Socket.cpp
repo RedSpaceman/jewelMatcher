@@ -9,43 +9,23 @@ Socket::Socket( SDL_Rect newSocketBound ):
 {
 }
 
-bool Socket::setJewel(Jewel* newJewel)
-{
-	if( newJewel != NULL )
-	{
-		currentJewel = newJewel;
-		return true;
-	}
-	return false;
-}
-
 Socket::~Socket()
 {
 	// Member pointer currentJewel must be cleaned-up
 	delete currentJewel;
 }
 
-SDL_Rect Socket::getSocketBound()
+SDL_Rect Socket::getSocketBound() const 
 {
 	return socketBound;
 }
 
-int Socket::getWidth()
-{
-	return socketBound.w;
-}
-
-int Socket::getHeight()
-{
-	return socketBound.h;
-}
-
-Jewel* Socket::getCurrentJewel()
+Jewel* Socket::getCurrentJewel() const
 {
 	return currentJewel;
 }
 
-char Socket::getCurrentJewelType()
+char Socket::getCurrentJewelType() const
 {
 	if( currentJewel != NULL )
 	{
@@ -55,7 +35,7 @@ char Socket::getCurrentJewelType()
 	return 'a';
 }
 
-bool Socket::containsJewel()
+bool Socket::containsJewel() const
 {
 	if( currentJewel != NULL )
 	{
@@ -64,15 +44,24 @@ bool Socket::containsJewel()
 	return false;
 }
 
-void Socket::generateJewel( SDL_Rect newJewelBound )
-{	
-	// Ensure any exist jewel pointer is destroyed
-	delete currentJewel;
-	// Generate new jewel for socket to contain
-	currentJewel = new Jewel( newJewelBound );
+bool Socket::setJewel( Jewel* newJewel )
+{
+	if( newJewel != NULL )
+	{
+		currentJewel = newJewel;
+		return true;
+	}
+	return false;
 }
 
-void Socket::generateOffsetJewel( int x, int y )
+void Socket::generateJewel( SDL_Rect const newJewelBound )
+{	
+	discardJewel();
+	// Generate new jewel for socket to contain
+	setJewel( new Jewel( newJewelBound ) );
+}
+
+void Socket::generateOffsetJewel( int const x, int const y )
 {	
 	// Use socket coordinates as starting point to which offset is applied
 	SDL_Rect newJewelBound = getSocketBound();
@@ -99,12 +88,15 @@ Jewel* Socket::relinquishJewel()
 
 void Socket::discardJewel()
 {
-	// Discarded jewel's object must be destroyed
-	delete currentJewel;
-	currentJewel = NULL;
+	if( currentJewel != NULL )
+	{
+		// Discarded jewel's object must be destroyed
+		delete currentJewel;
+		currentJewel = NULL;
+	}
 }
 
-bool Socket::setCurrentJewelDestination( SDL_Rect newDestination )
+bool Socket::setCurrentJewelDestination( SDL_Rect const newDestination )
 {
 	Jewel* jewel = getCurrentJewel();
 	if( jewel != NULL )
@@ -115,7 +107,7 @@ bool Socket::setCurrentJewelDestination( SDL_Rect newDestination )
 	return false;
 }
 
-bool Socket::moveJewelToDestination( int deltaTime )
+bool Socket::moveJewelToDestination( int const deltaTime )
 {
 	return getCurrentJewel()->moveToDestination( deltaTime );
 }

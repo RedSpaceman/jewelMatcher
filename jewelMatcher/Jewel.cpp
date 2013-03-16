@@ -21,40 +21,8 @@ Jewel::Jewel(SDL_Rect newJewelBound, char newJewelType):
 {
 }
 
-SDL_Rect Jewel::getDestination()
+char Jewel::getRandomJewelType() const
 {
-	return destination;
-}
-
-float Jewel::getProgress()
-{
-	return progress;
-}
-
-void Jewel::setNewDestination(SDL_Rect newDest)
-{
-	destination = newDest;
-	if( ( destination.x == jewelBound.x ) && ( destination.y == jewelBound.y ) )
-	{
-		// Already at destination
-		progress = 1.0;
-	}
-	else
-	{
-		progress = 0.0;
-	}
-}
-
-SDL_Rect Jewel::getJewelBound()
-{
-	return jewelBound;
-}
-
-char Jewel::getJewelType(){
-	return jewelType;
-};
-
-char Jewel::getRandomJewelType(){
 	float r = (float)( rand() / (float)(RAND_MAX));
 	char chosenJewelType = 'p';
 
@@ -82,7 +50,50 @@ char Jewel::getRandomJewelType(){
 	return chosenJewelType;
 }
 
-bool Jewel::moveToDestination( int deltaTime )
+SDL_Rect Jewel::getDestination() const
+{
+	return destination;
+}
+
+float Jewel::getProgress() const
+{
+	return progress;
+}
+
+SDL_Rect Jewel::getJewelBound() const
+{
+	return jewelBound;
+}
+
+char Jewel::getJewelType() const{
+	return jewelType;
+};
+
+bool Jewel::inTransit() const
+{
+	if( progress == 1.0 )
+	{
+		// jewel is not moving (is at destination)
+		return false;
+	}
+	return true;
+}
+
+void Jewel::setNewDestination( SDL_Rect newDest )
+{
+	destination = newDest;
+	if( ( destination.x == jewelBound.x ) && ( destination.y == jewelBound.y ) )
+	{
+		// Already at destination
+		progress = 1.0;
+	}
+	else
+	{
+		progress = 0.0;
+	}
+}
+
+bool Jewel::moveToDestination( int const deltaTime )
 {
 	// moveToDestination is the only way to increase progress
 	float thisProgress = travelSpeed * deltaTime;
@@ -96,14 +107,4 @@ bool Jewel::moveToDestination( int deltaTime )
 		return true;
 	}
 	return false;
-}
-
-bool Jewel::inTransit()
-{
-	if( progress == 1.0 )
-	{
-		// jewel is not moving
-		return false;
-	}
-	return true;
 }
