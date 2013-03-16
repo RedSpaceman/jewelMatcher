@@ -415,6 +415,9 @@ int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScor
 			// Remove currentJewel from socket
 			(*socketIterator)->discardJewel();
 		}
+
+		// Group no longer useful, so delete
+		delete *groupItr;
 	}
 	validGroups.clear();
 
