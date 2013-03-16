@@ -103,16 +103,27 @@ void drawGrid( Grid* const &gameGrid )
 {
 	std::vector<Socket*>::iterator socketsBegin = gameGrid->getSocketsBeginning();
 	std::vector<Socket*>::iterator socketsEnd = gameGrid->getSocketsEnd();
+
+	// Using current mouse coordinates, determine which socket is being hovered over
+	Socket* mouseOverSocket = gameGrid->getSocketAtCoordinates( mouseX, mouseY );
+
 	for( std::vector<Socket*>::iterator it = socketsBegin; it != socketsEnd; it++ )
 	{
-		// Set socket surface alphas
+		// Set Surface Alpha Values
+		// set socketSelected surface alpha
 		int alpha = (int)( (SDL_ALPHA_OPAQUE - SDL_ALPHA_TRANSPARENT) * 0.5 );
 		SDL_SetAlpha( socketSelected, SDL_SRCALPHA, alpha );
+		// set socketDefault surface alpha
 		alpha = (int)( (SDL_ALPHA_OPAQUE - SDL_ALPHA_TRANSPARENT) * 0.4);
 		SDL_SetAlpha( socketDefault, SDL_SRCALPHA, alpha );
+		// set socketHover surface alpha
+		alpha = (int)( (SDL_ALPHA_OPAQUE - SDL_ALPHA_TRANSPARENT) * 0.4);
+		SDL_SetAlpha( socketHover, SDL_SRCALPHA, alpha );
+
 		// For each Socket in sockets, draw background
 		Socket* nextSocket = *it;
 		SDL_Rect socketBound = nextSocket->getSocketBound();
+		
 		// Draw socket image dependent on whether socket is selected
 		if( ( selectedSockets.size() > 0 && ( nextSocket == selectedSockets.at(0) ) ) 
 			|| ( selectedSockets.size() > 1 && ( nextSocket == selectedSockets.at(1) ) ) )
@@ -121,7 +132,17 @@ void drawGrid( Grid* const &gameGrid )
 		}
 		else
 		{
-			apply_surface( socketBound.x, socketBound.y, socketDefault, screen);
+			// Check if mouse is over this socket
+			if( mouseOverSocket != NULL && mouseOverSocket == *it )
+			{
+				// Use mouse-over socket image
+				apply_surface( socketBound.x, socketBound.y, socketHover, screen);
+			}
+			else
+			{
+				// Use default socket image
+				apply_surface( socketBound.x, socketBound.y, socketDefault, screen);
+			}
 		}
 
 		// Draw jewel
