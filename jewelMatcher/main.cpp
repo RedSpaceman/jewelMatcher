@@ -480,11 +480,9 @@ int main( int argc, char* args[] )
 		
 		} // End of poll event clearing
 
-		// Check if the game timer has run out yet
-		if( totalTimeElapsed < totalGameLength )
-		{
+		
 			// Pause inhibits user input and animation
-			if( isPaused )
+			if( isPaused && !gameOver )
 			{
 				// Set message so user understands what state game is in and why interaction is halted.
 				message = pausedMessage;
@@ -541,65 +539,71 @@ int main( int argc, char* args[] )
 					}
 				}
 
-				// Only allow user mouse interaction if game is not handling grid animation etc
-				if( !gridReady )
-				{
-					// If grid is not ready...
-					// - prompt empty sockets to steal/generate jewels
-					// - prompt jewels to move towards their destinations
-				}
-				else
-				{
-					// Animations have been resolved, grid is ready for input
 
-					// Illegal moves require jewels to be switched back before the game can continue
-					if( !legalMove )
+				// Check if the game timer has run out yet
+				if( totalTimeElapsed < totalGameLength )
+				{
+					// Only allow user mouse interaction if game is not handling grid animation etc
+					if( !gridReady )
 					{
-						switchBackTimeCounter += animationTime;
-						if( switchBackTimeCounter >= switchBackTimeTarget )
-						{	
-							// Reset switchback delay variable
-							switchBackTimeCounter = 0;
-
-							// Jewel exchange reversal can only occur if two sockets are selected
-							if( selectedSockets.size() == 2 )
-							{
-								// Invalid move by those currently in selection must be reversed
-								gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
-							}
-
-							// Indicate switchback has been completed
-							legalMove = true;
-							// Deselect sockets involved in switch back
-							selectedSockets.clear();
-						}
+						// If grid is not ready...
+						// - prompt empty sockets to steal/generate jewels
+						// - prompt jewels to move towards their destinations
 					}
 					else
 					{
-						// If an upClick occurred, check if it was within grid
-						if( upClickOccurred )
-						{ 
-							if( gameGrid->withinBound( mUpClickX, mUpClickY ) ) 
-							{
-								// Reset the flag for the next upclick
-								upClickOccurred = false;
-								// Execute behaviour for selecting sockets at coordinates
-								moveMade = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
-							}
-							else
-							{							
-								// Clicking outside of the grid is used for deselection
+						// Animations have been resolved, grid is ready for input
+
+						// Illegal moves require jewels to be switched back before the game can continue
+						if( !legalMove )
+						{
+							switchBackTimeCounter += animationTime;
+							if( switchBackTimeCounter >= switchBackTimeTarget )
+							{	
+								// Reset switchback delay variable
+								switchBackTimeCounter = 0;
+
+								// Jewel exchange reversal can only occur if two sockets are selected
+								if( selectedSockets.size() == 2 )
+								{
+									// Invalid move by those currently in selection must be reversed
+									gameGrid->attemptJewelExchange( selectedSockets.at(0), selectedSockets.at(1) );
+								}
+
+								// Indicate switchback has been completed
+								legalMove = true;
+								// Deselect sockets involved in switch back
 								selectedSockets.clear();
 							}
 						}
-					}
-				} // End of gridReady/!gridReady statement
+						else
+						{
+							// If an upClick occurred, check if it was within grid
+							if( upClickOccurred )
+							{ 
+								if( gameGrid->withinBound( mUpClickX, mUpClickY ) ) 
+								{
+									// Reset the flag for the next upclick
+									upClickOccurred = false;
+									// Execute behaviour for selecting sockets at coordinates
+									moveMade = performSocketSelection( mUpClickX, mUpClickY, gameGrid );							
+								}
+								else
+								{							
+									// Clicking outside of the grid is used for deselection
+									selectedSockets.clear();
+								}
+							}
+						}
+					} // End of gridReady/!gridReady statement
+				} 
+				else
+				{	
+					// Full game length has elapsed 
+					gameOver = true;
+				}
 			} // End of pause/!pause statement
-		} 
-		else
-		{		 
-			gameOver = true;
-		}
+		
 
 		// Draw back game visuals
 		apply_surface( 0, 0, backgroundImage, screen );
