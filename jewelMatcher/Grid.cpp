@@ -152,7 +152,6 @@ std::vector<Socket*>::iterator Grid::getSocketsEnd()
 	return sockets.end();
 }
 
-// Check if the given coordinates are inside the grid's boundary
 bool Grid::withinBound(int x, int y)
 {
 	if( ( x >= gridBound.x ) && x <= gridBound.x + gridBound.w )

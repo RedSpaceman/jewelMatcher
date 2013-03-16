@@ -33,6 +33,11 @@ std::vector<Socket*> selectedSockets;
 TTF_Font *font = NULL;
 SDL_Color textColor = { 10, 10, 10 };
 SDL_Surface* message = NULL;
+SDL_Surface* titleMessage =	TTF_RenderText_Solid( font, "Jewel Matcher", textColor );
+SDL_Surface* pausedMessage = TTF_RenderText_Solid( font, "Paused - Press 'p' to Continue", textColor );
+SDL_Surface* gameOverMessage = TTF_RenderText_Solid( font, "Game Over", textColor );
+SDL_Surface* timerMessage = TTF_RenderText_Solid( font, "Time left: ", textColor );
+SDL_Surface* scoreMessage = TTF_RenderText_Solid( font, "Score:", textColor );
 
 int SCREEN_WIDTH = 755;
 int SCREEN_HEIGHT = 600; 
@@ -172,6 +177,36 @@ void drawGrid( Grid* const &gameGrid )
 			}
 		}
 	}
+}
+
+void drawHUD( int const totalTimeElapsed )
+{
+	// Display timer
+	std::stringstream time; 
+	time << "Time Left: " << (int)( (totalGameLength - totalTimeElapsed) / 1000.0f ) << " seconds";
+	timerMessage = TTF_RenderText_Solid( font, time.str().c_str(), textColor );
+	apply_surface( 15, 567, timerMessage, screen);
+
+	// Display "Score:"		
+	scoreMessage = TTF_RenderText_Solid( font, "Score:", textColor );
+	apply_surface( 458, 460, scoreMessage, screen);
+
+	// Display score value, using offsets to allow number to appear centred even as number of figures increases
+	std::stringstream currentScore;
+	currentScore << gameScore;
+	scoreMessage = TTF_RenderText_Solid( font, currentScore.str().c_str(), textColor );
+	int scoreXCentred = 495;
+	// Actual x location must be offset for each numeral in the score
+	int numeralCounter = 1;
+	int tempScore = gameScore;
+	while( tempScore > 0 )
+	{
+		tempScore = (int)( tempScore / 10 );
+		numeralCounter++;
+	}
+	int characterWidth = 6;
+	int offsetScoreX = scoreXCentred - ( ( numeralCounter / 2 ) * characterWidth ) ;
+	apply_surface( offsetScoreX, 540, scoreMessage, screen);
 }
 
 bool init() 
@@ -337,12 +372,6 @@ int main( int argc, char* args[] )
 	{
 		return 1;
 	}
-
-	SDL_Surface* titleMessage =	TTF_RenderText_Solid( font, "Jewel Matcher", textColor );
-	SDL_Surface* pausedMessage = TTF_RenderText_Solid( font, "Paused - Press 'p' to Continue", textColor );
-	SDL_Surface* gameOverMessage = TTF_RenderText_Solid( font, "Game Over", textColor );
-	SDL_Surface* timerMessage = TTF_RenderText_Solid( font, "Time left: ", textColor );
-	SDL_Surface* scoreMessage = TTF_RenderText_Solid( font, "Score:", textColor );
 
 	//Apply image to screen
 	apply_surface( 0, 0, backgroundImage, screen );
@@ -576,35 +605,7 @@ int main( int argc, char* args[] )
 		apply_surface( 0, 0, backgroundImage, screen );
 		drawGrid( gameGrid );
 
-		// Display timer
-		std::stringstream time; 
-		time << "Time Left: " << (int)( (totalGameLength - totalTimeElapsed) / 1000.0f ) << " seconds";
-		timerMessage = TTF_RenderText_Solid( font, time.str().c_str(), textColor );
-		apply_surface( 15, 567, timerMessage, screen);
-
-		// Display "Score:"		
-		scoreMessage = TTF_RenderText_Solid( font, "Score:", textColor );
-		apply_surface( 458, 460, scoreMessage, screen);
-		// Display score value
-		std::stringstream currentScore;
-		currentScore << gameScore;
-		scoreMessage = TTF_RenderText_Solid( font, currentScore.str().c_str(), textColor );
-		int scoreXCentred = 495;
-		// Actual x location must be offset for each numeral in the score
-		int numeralCounter = 1;
-		int tempScore = gameScore;
-		while( tempScore > 0 )
-		{
-			tempScore = (int)( tempScore / 10 );
-			numeralCounter++;
-		}
-		int characterWidth = 6;
-		int offsetScoreX = scoreXCentred - ( ( numeralCounter / 2 ) * characterWidth ) ;
-		if( numeralCounter > 1 )
-		{
-		//	offsetScoreX -= ( numeralCounter % 2 ) * characterWidth;
-		}
-		apply_surface( offsetScoreX, 540, scoreMessage, screen);
+		drawHUD( totalTimeElapsed );
 
 		if( gameOver )
 		{

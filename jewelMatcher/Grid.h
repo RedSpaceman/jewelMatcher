@@ -49,6 +49,7 @@ class Grid{
 		std::vector<Socket*>::iterator getSocketsBeginning();
 		std::vector<Socket*>::iterator getSocketsEnd();
 
+		// Check if the given coordinates are inside the grid's boundary
 		bool Grid::withinBound(int x, int y);
 
 		// Given screen coordinates checked for grid-validity, then used to return a pointer to socket at that location
