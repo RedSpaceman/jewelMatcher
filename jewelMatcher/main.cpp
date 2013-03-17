@@ -154,30 +154,30 @@ void clean_up( Grid* &gameGrid )
 bool load_files()
 {
 	//Load background image
-	backgroundImage = load_image( "../images/BackGround.jpg" );
+	backgroundImage = load_image( "./images/BackGround.jpg" );
 	if ( backgroundImage == NULL ) return false;
 	//load red
-	redJewel = load_image( "../images/Red.png" );
+	redJewel = load_image( "./images/Red.png" );
 	if ( redJewel == NULL ) return false;
 	//load blue
-	blueJewel = load_image( "../images/Blue.png" );
+	blueJewel = load_image( "./images/Blue.png" );
 	if ( blueJewel == NULL ) return false;
 	//load green
-	greenJewel = load_image( "../images/Green.png" );
+	greenJewel = load_image( "./images/Green.png" );
 	if ( greenJewel == NULL ) return false;
 	//load yellow
-	yellowJewel = load_image( "../images/Yellow.png" );
+	yellowJewel = load_image( "./images/Yellow.png" );
 	if ( yellowJewel == NULL ) return false;
 	//load purple
-	purpleJewel = load_image( "../images/Purple.png" );
+	purpleJewel = load_image( "./images/Purple.png" );
 	if ( purpleJewel == NULL ) return false;	
 
 	//load socket images
-	socketDefault = load_image( "../images/socketDefault.png" );
+	socketDefault = load_image( "./images/socketDefault.png" );
 	if ( socketDefault == NULL ) return false;
-	socketHover = load_image( "../images/socketHover.png" );
+	socketHover = load_image( "./images/socketHover.png" );
 	if ( socketHover == NULL ) return false;
-	socketSelected = load_image( "../images/socketSelected.png" );
+	socketSelected = load_image( "./images/socketSelected.png" );
 	if ( socketSelected == NULL ) return false;
 
 	// Open font
