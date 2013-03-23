@@ -1,5 +1,5 @@
 #include "SDL.h"
-#include "Socket.h"
+#include "../include/Socket.h"
 
 #include <iostream>
 

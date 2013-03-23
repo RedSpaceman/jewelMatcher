@@ -1,7 +1,7 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#include "Jewel.h"
+#include "../include/Jewel.h"
 
 class Socket
 {

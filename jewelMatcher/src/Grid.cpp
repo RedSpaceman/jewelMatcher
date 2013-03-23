@@ -1,4 +1,4 @@
-#include "Grid.h"
+#include "../include/Grid.h"
 
 Grid::Grid(int newGridWidth, int newCentreX, int newCentreY, int newCellWidth, int newCellHeight):
 	gridWidth( newGridWidth ),

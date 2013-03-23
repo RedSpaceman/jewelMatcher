@@ -1,4 +1,4 @@
-#include "Jewel.h"
+#include "../include/Jewel.h"
 
 Jewel::Jewel(){
 }

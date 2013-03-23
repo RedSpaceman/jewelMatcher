@@ -1,4 +1,4 @@
-#include "ColorGroup.h"
+#include "../include/ColorGroup.h"
 
 ColorGroup::ColorGroup(): 
 	groupColor('z')

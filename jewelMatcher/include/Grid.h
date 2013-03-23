@@ -4,8 +4,8 @@
 #include "SDL.h"
 #include <vector>
 
-#include "ColorGroup.h"
-#include "Socket.h"
+#include "../include/ColorGroup.h"
+#include "../include/Socket.h"
 
 class Grid{
 	private: 

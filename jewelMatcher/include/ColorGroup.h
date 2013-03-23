@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 
-#include "Socket.h"
+#include "../include/Socket.h"
 
 // Used to point to a series of sockets whose jewels form a matching set and will be removed and scored together
 class ColorGroup
