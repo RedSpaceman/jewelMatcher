@@ -392,7 +392,7 @@ int Grid::scoreColorGroups( std::vector<ColorGroup*> &validGroups, int &gameScor
 
 	// Scoring Guide:
 	// Points rapidly increase with size, with an additional increasing bonus for additional color group scored
-	// score = ( baseMultiplier * (groupSize^2) ) + (totalColorGroups-1) * multiGroupBonus)
+	// Formula: score = ( baseMultiplier * (groupSize^2) ) + (totalColorGroups-1) * multiGroupBonus)
 	int baseMultiplier = 5;
 	int multiGroupBonus = 30;
 	

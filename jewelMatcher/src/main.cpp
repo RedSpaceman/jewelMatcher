@@ -127,7 +127,7 @@ void apply_surface( int x, int y, SDL_Surface* source, SDL_Surface* destination 
 	SDL_BlitSurface( source, NULL, destination, &offset );
 }
 
-void clean_up( Grid* &gameGrid )
+void clean_up( Grid* gameGrid )
 {
 	delete gameGrid;
 
@@ -336,7 +336,7 @@ void drawHUD( int const totalTimeElapsed, int &gameScore )
 }
 
 // Initiates a search of the Grid for color groups, 
-bool searchForScoringGroups( Grid* &gameGrid, int &gameScore )
+bool searchForScoringGroups( Grid* gameGrid, int &gameScore )
 {
 	// Check whether jewel switch has created color groups by attempting to detect and score them							
 	int totalGroupsScored = gameGrid->scoreColorGroups( (gameGrid->findColorGroups()), gameScore );
@@ -350,7 +350,7 @@ bool searchForScoringGroups( Grid* &gameGrid, int &gameScore )
 }
 
 // Checks number of sockets selected and prompts behaviour accordingly, switching jewels if two sockets are selected, with return type indicating whether a switch occurred
-bool performSocketSelection( int x, int y, Grid* &gameGrid )
+bool performSocketSelection( int x, int y, Grid* gameGrid )
 {
 	// Collect pointer to socket being upclicked
 	Socket* upClickedSocket = gameGrid->getSocketAtCoordinates( x, y );
